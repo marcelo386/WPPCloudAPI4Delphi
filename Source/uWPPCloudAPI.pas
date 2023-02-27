@@ -20,7 +20,7 @@ type
     function CaractersWeb(vText: string): string;
 
   protected
-    //procedure Int_OnNotificationCenter(PTypeHeader: TTypeHeader; PValue: String; Const PReturnClass : TObject= nil);
+
 
   public
     //Individual

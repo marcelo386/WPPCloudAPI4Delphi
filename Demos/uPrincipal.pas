@@ -501,7 +501,8 @@ begin
   end;
 
   //Exemplo
-  jsonTemplate := '{"messaging_product":"whatsapp","to":"' + ed_num.Text + '","type":"template",' +
+  jsonTemplate :=
+      '{"messaging_product":"whatsapp","to":"' + ed_num.Text + '","type":"template",' +
       '"template":{"name":"teste_botoes","language":{"code":"pt_BR","policy":"deterministic"},' +
       '"components":[{"type":"body",' +
       '"parameters":[' +
