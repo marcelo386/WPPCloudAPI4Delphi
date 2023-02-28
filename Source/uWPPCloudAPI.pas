@@ -4,11 +4,13 @@ interface
 
 uses
   System.SysUtils, System.Classes, System.JSON, System.Net.HttpClient, System.Net.URLClient, IdSSLOpenSSL, IdHTTP,
-  uRetMensagemApiOficial, StrUtils;
+  uRetMensagemApiOficial, StrUtils, Horse, Horse.Commons, Horse.HTTP, Horse.Core;
+
 
 type
   {Events}
   TOnRetSendMessage = Procedure(Sender : TObject; Response: TMessagePayload) of object;
+  TResponseEvent = Procedure(Sender : TObject; Response: string) of object;
 
   TWPPCloudAPI = class(TComponent)
 
@@ -16,7 +18,9 @@ type
     FDDIDefault: Integer;
     FTokenApiOficial: string;
     FOnRetSendMessage: TOnRetSendMessage;
+    FOnResponse: TResponseEvent;
     FPHONE_NUMBER_ID: string;
+    FPort: Integer;
     function CaractersWeb(vText: string): string;
 
   protected
@@ -40,12 +44,20 @@ type
 
     function UploadMedia(FileName: string): string;
 
+    procedure StartServer;
+    procedure StopServer;
+
   published
     property TokenApiOficial  : string             read FTokenApiOficial   write FTokenApiOficial;
     property PHONE_NUMBER_ID  : string             read FPHONE_NUMBER_ID   write FPHONE_NUMBER_ID;
     property DDIDefault       : Integer            read FDDIDefault        write FDDIDefault         Default 55;
+    property Port             : Integer            read FPort              write FPort               Default 8020;
     property OnRetSendMessage : TOnRetSendMessage  read FOnRetSendMessage  write FOnRetSendMessage;
+    property OnResponse       : TResponseEvent     read FOnResponse        write FOnResponse;
+
   end;
+
+
 
 procedure Register;
 
@@ -57,6 +69,7 @@ begin
 end;
 
 { TWPPCloudAPI }
+
 
 function TWPPCloudAPI.CaractersWeb(vText: string): string;
 begin
@@ -911,6 +924,35 @@ begin
     ssl.Free;
     http.Free;
   end;
+end;
+
+procedure TWPPCloudAPI.StartServer;
+begin
+  THorse
+    .Post('/responsewebhook',
+      procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
+      var
+        Response: string;
+      begin
+        Response := 'save response webhook ok';
+        Res.Send(Response);
+
+        Response := Req.Body;
+        if Assigned(FOnResponse) then
+          FOnResponse(Self, Response);
+      end
+    );
+
+  if Port = 0 then
+    Port := 8020;
+
+  THorse.Port := Port;
+  THorse.Listen;
+end;
+
+procedure TWPPCloudAPI.StopServer;
+begin
+  THorse.StopListen;
 end;
 
 function TWPPCloudAPI.UploadMedia(FileName: string): string;

@@ -69,6 +69,9 @@ type
     procedure btnResponderClick(Sender: TObject);
     procedure BitBtn2Click(Sender: TObject);
     procedure btnArquivoClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure WPPCloudAPI1Response(Sender: TObject; Response: string);
   private
     { Private declarations }
   public
@@ -524,6 +527,22 @@ begin
   sResponse := WPPCloudAPI1.Send_Template(jsonTemplate);
 
   memResponse.Lines.Add(sResponse);
+end;
+
+procedure TfrmPrincipal.FormCreate(Sender: TObject);
+begin
+  WPPCloudAPI1.Port := 8020;
+
+end;
+
+procedure TfrmPrincipal.FormShow(Sender: TObject);
+begin
+  WPPCloudAPI1.StartServer;
+end;
+
+procedure TfrmPrincipal.WPPCloudAPI1Response(Sender: TObject; Response: string);
+begin
+  memResponse.Lines.Add('' + Response + #13#10);
 end;
 
 end.

@@ -33,6 +33,8 @@ requires
   IndyProtocols,
   IndyCore;
 
+  //horsepkg;
+
 contains
   uRetMensagemApiOficial in '..\Source\uRetMensagemApiOficial.pas',
   uWPPCloudAPI in '..\Source\uWPPCloudAPI.pas';

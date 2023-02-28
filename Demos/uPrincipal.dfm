@@ -12,6 +12,8 @@ object frmPrincipal: TfrmPrincipal
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
+  OnCreate = FormCreate
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
@@ -265,7 +267,6 @@ object frmPrincipal: TfrmPrincipal
       Images = ImageList1
       TabOrder = 12
       Visible = False
-      ExplicitTop = 390
     end
     object btnLink: TButton
       AlignWithMargins = True
@@ -279,7 +280,6 @@ object frmPrincipal: TfrmPrincipal
       Images = ImageList1
       TabOrder = 7
       OnClick = btnLinkClick
-      ExplicitLeft = -3
     end
     object btnImagemBotao: TButton
       AlignWithMargins = True
@@ -293,7 +293,6 @@ object frmPrincipal: TfrmPrincipal
       Images = ImageList1
       TabOrder = 6
       Visible = False
-      ExplicitTop = 204
     end
     object btnImagem: TButton
       AlignWithMargins = True
@@ -307,7 +306,6 @@ object frmPrincipal: TfrmPrincipal
       Images = ImageList1
       TabOrder = 5
       OnClick = btnImagemClick
-      ExplicitLeft = 3
     end
     object btnVideoBotao: TButton
       AlignWithMargins = True
@@ -321,7 +319,6 @@ object frmPrincipal: TfrmPrincipal
       Images = ImageList1
       TabOrder = 4
       Visible = False
-      ExplicitTop = 142
     end
     object btnVideo: TButton
       AlignWithMargins = True
@@ -336,7 +333,6 @@ object frmPrincipal: TfrmPrincipal
       Images = ImageList1
       TabOrder = 3
       Visible = False
-      ExplicitTop = 111
     end
     object btnListaMenu: TButton
       AlignWithMargins = True
@@ -391,7 +387,6 @@ object frmPrincipal: TfrmPrincipal
       Images = ImageList1
       TabOrder = 8
       Visible = False
-      ExplicitTop = 266
     end
     object btnContato: TButton
       AlignWithMargins = True
@@ -405,8 +400,6 @@ object frmPrincipal: TfrmPrincipal
       Images = ImageList1
       TabOrder = 10
       OnClick = btnContatoClick
-      ExplicitLeft = 7
-      ExplicitTop = 111
     end
     object btnSticker: TButton
       AlignWithMargins = True
@@ -420,7 +413,6 @@ object frmPrincipal: TfrmPrincipal
       Images = ImageList1
       TabOrder = 9
       Visible = False
-      ExplicitTop = 297
     end
     object btnLocalizacao: TButton
       AlignWithMargins = True
@@ -434,8 +426,6 @@ object frmPrincipal: TfrmPrincipal
       Images = ImageList1
       TabOrder = 11
       OnClick = btnLocalizacaoClick
-      ExplicitLeft = -12
-      ExplicitTop = 131
     end
     object btnArquivo: TButton
       AlignWithMargins = True
@@ -449,7 +439,6 @@ object frmPrincipal: TfrmPrincipal
       Images = ImageList1
       TabOrder = 13
       OnClick = btnArquivoClick
-      ExplicitLeft = 3
     end
     object Button2: TButton
       AlignWithMargins = True
@@ -463,7 +452,6 @@ object frmPrincipal: TfrmPrincipal
       Images = ImageList1
       TabOrder = 14
       Visible = False
-      ExplicitTop = 452
     end
     object btnReagir: TButton
       AlignWithMargins = True
@@ -477,8 +465,6 @@ object frmPrincipal: TfrmPrincipal
       Images = ImageList1
       TabOrder = 15
       OnClick = btnReagirClick
-      ExplicitLeft = 7
-      ExplicitTop = 187
     end
     object btnResponder: TButton
       AlignWithMargins = True
@@ -492,8 +478,6 @@ object frmPrincipal: TfrmPrincipal
       Images = ImageList1
       TabOrder = 16
       OnClick = btnResponderClick
-      ExplicitLeft = -12
-      ExplicitTop = 173
     end
     object BitBtn2: TButton
       AlignWithMargins = True
@@ -507,8 +491,6 @@ object frmPrincipal: TfrmPrincipal
       Images = ImageList1
       TabOrder = 17
       OnClick = BitBtn2Click
-      ExplicitLeft = -12
-      ExplicitTop = 235
     end
   end
   object memResponse: TMemo
@@ -1468,6 +1450,8 @@ object frmPrincipal: TfrmPrincipal
       'X4yyfl5z6XLvAerSPLwYAa61G1drhlQb1JQWA1Dl8O9pGQ9ay0kAT2DLmsnYUreO' +
       'J1VlUtoZByp0S4uc8AUEtUeeHP5K8HLnfZCUl9GwMHZCFxgZBwSOffLPwetP23jq' +
       'e7RZBqMoL7uL1QzgZDZD'
+    PHONE_NUMBER_ID = '102543536015996'
+    OnResponse = WPPCloudAPI1Response
     Left = 232
     Top = 328
   end
