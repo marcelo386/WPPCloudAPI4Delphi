@@ -9,7 +9,8 @@ uses
   Vcl.Forms,
   uPrincipal in 'uPrincipal.pas' {frmPrincipal},
   uRetMensagemApiOficial in '..\Source\uRetMensagemApiOficial.pas',
-  uWPPCloudAPI in '..\Source\uWPPCloudAPI.pas';
+  uWPPCloudAPI in '..\Source\uWPPCloudAPI.pas',
+  uWhatsAppBusinessClasses in '..\Source\uWhatsAppBusinessClasses.pas';
 
 {$R *.res}
 

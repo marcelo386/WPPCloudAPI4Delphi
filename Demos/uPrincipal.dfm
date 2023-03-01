@@ -1451,6 +1451,8 @@ object frmPrincipal: TfrmPrincipal
       'J1VlUtoZByp0S4uc8AUEtUeeHP5K8HLnfZCUl9GwMHZCFxgZBwSOffLPwetP23jq' +
       'e7RZBqMoL7uL1QzgZDZD'
     PHONE_NUMBER_ID = '102543536015996'
+    DDIDefault = 0
+    Port = 0
     OnResponse = WPPCloudAPI1Response
     Left = 232
     Top = 328

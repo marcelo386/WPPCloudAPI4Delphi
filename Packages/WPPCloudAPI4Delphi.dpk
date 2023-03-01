@@ -31,12 +31,11 @@ requires
   rtl,
   IndySystem,
   IndyProtocols,
-  IndyCore;
-
-  //horsepkg;
+  IndyCore,
+  inet;
 
 contains
   uRetMensagemApiOficial in '..\Source\uRetMensagemApiOficial.pas',
-  uWPPCloudAPI in '..\Source\uWPPCloudAPI.pas';
+  uWPPCloudAPI in '..\Source\uWPPCloudAPI.pas' {/Web.WebBroker;};
 
 end.

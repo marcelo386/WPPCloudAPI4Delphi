@@ -4,7 +4,7 @@ interface
 
 uses
   System.SysUtils, System.Classes, System.JSON, System.Net.HttpClient, System.Net.URLClient, IdSSLOpenSSL, IdHTTP,
-  uRetMensagemApiOficial, StrUtils, Horse, Horse.Commons, Horse.HTTP, Horse.Core;
+  uRetMensagemApiOficial, StrUtils, Horse, Horse.Commons, Horse.HTTP, Horse.Core, web.WebBroker;
 
 
 type

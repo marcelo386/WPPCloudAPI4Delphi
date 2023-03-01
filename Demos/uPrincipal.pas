@@ -4,7 +4,8 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls, System.ImageList, Vcl.ImgList, uWPPCloudAPI;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls, System.ImageList, Vcl.ImgList, uWPPCloudAPI,
+  uWhatsAppBusinessClasses;
 
 type
   TfrmPrincipal = class(TForm)
@@ -541,8 +542,42 @@ begin
 end;
 
 procedure TfrmPrincipal.WPPCloudAPI1Response(Sender: TObject; Response: string);
+var
+  Result: uWhatsAppBusinessClasses.TResultClass;
 begin
+
   memResponse.Lines.Add('' + Response + #13#10);
+
+  try
+    Result := TResultClass.FromJsonString(Response);
+    memResponse.Lines.Add('id: ' + Result.entry[0].id);
+
+    if Assigned(Result.entry[0].changes[0]) then
+    begin
+      if Assigned(Result.entry[0].changes[0].value) then
+      begin
+        if Assigned(Result.entry[0].changes[0].value.messages[0]) then
+        begin
+          memResponse.Lines.Add('Type: ' + Result.entry[0].changes[0].value.messages[0].&type);
+          if Assigned(Result.entry[0].changes[0].value.messages[0].button) then
+            memResponse.Lines.Add('Text: ' + Result.entry[0].changes[0].value.messages[0].button.Text);
+
+          if Assigned(Result.entry[0].changes[0].value.messages[0].text) then
+            memResponse.Lines.Add('Text: ' + Result.entry[0].changes[0].value.messages[0].text.body);
+
+          if Assigned(Result.entry[0].changes[0].value.messages[0].context) then
+          begin
+            memResponse.Lines.Add('id mensagem Origem: ' + Result.entry[0].changes[0].value.messages[0].context.id);
+            //memResponse.Lines.Add('From mensagem Origem: ' + Result.entry[0].changes[0].value.messages[0].context.From);
+          end;
+
+        end;
+      end;
+    end;
+
+  except on E: Exception do
+  end;
+
 end;
 
 end.

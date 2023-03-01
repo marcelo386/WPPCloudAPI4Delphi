@@ -151,8 +151,11 @@
         <DCCReference Include="IndySystem.dcp"/>
         <DCCReference Include="IndyProtocols.dcp"/>
         <DCCReference Include="IndyCore.dcp"/>
+        <DCCReference Include="inet.dcp"/>
         <DCCReference Include="..\Source\uRetMensagemApiOficial.pas"/>
-        <DCCReference Include="..\Source\uWPPCloudAPI.pas"/>
+        <DCCReference Include="..\Source\uWPPCloudAPI.pas">
+            <Form>/Web.WebBroker;</Form>
+        </DCCReference>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
