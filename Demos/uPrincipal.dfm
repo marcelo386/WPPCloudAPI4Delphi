@@ -44,10 +44,10 @@ object frmPrincipal: TfrmPrincipal
     Height = 21
     TabOrder = 0
     Text = 
-      'EAAP56XaRTS0BAMKwFb04ZBSVdKjfWKZBZAC7gZAwKSPIR1mxLoryRpl724CEWYP' +
-      'X4yyfl5z6XLvAerSPLwYAa61G1drhlQb1JQWA1Dl8O9pGQ9ay0kAT2DLmsnYUreO' +
-      'J1VlUtoZByp0S4uc8AUEtUeeHP5K8HLnfZCUl9GwMHZCFxgZBwSOffLPwetP23jq' +
-      'e7RZBqMoL7uL1QzgZDZD'
+      'EAAP56XaRTS0BAFKTaNC2BbJDZAlZAGo6MOGOMs5YHIaZBcQsJXBdD2EEMHXU6Gt' +
+      'ganOxPb1YOkIKZCHv3xHmYc6wdGz4DzMG3kITRnCpG58ZACMVBpOuUxoaxo1VcqZ' +
+      'CUKZBWe90dZCy12ZBIe6I927v5fHo2mMMQYTykdOwykGrZAjUtSGeZAQF2tRjkEb' +
+      'ujGqlPd8cmHkFDvsgQZDZD'
   end
   object GroupBox1: TGroupBox
     AlignWithMargins = True
@@ -506,7 +506,6 @@ object frmPrincipal: TfrmPrincipal
     Width = 345
     Height = 21
     TabOrder = 4
-    Text = '102543536015996'
   end
   object ImageList1: TImageList
     DrawingStyle = dsTransparent
