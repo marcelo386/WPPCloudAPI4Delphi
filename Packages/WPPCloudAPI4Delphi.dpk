@@ -32,7 +32,13 @@ requires
   IndySystem,
   IndyProtocols,
   IndyCore,
-  inet;
+  inet,
+  dbrtl,
+  FireDAC,
+  FireDACCommonDriver,
+  FireDACCommon,
+  bindengine,
+  bindcomp;
 
 contains
   uRetMensagemApiOficial in '..\Source\uRetMensagemApiOficial.pas',

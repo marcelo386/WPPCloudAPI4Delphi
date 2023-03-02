@@ -152,6 +152,12 @@
         <DCCReference Include="IndyProtocols.dcp"/>
         <DCCReference Include="IndyCore.dcp"/>
         <DCCReference Include="inet.dcp"/>
+        <DCCReference Include="dbrtl.dcp"/>
+        <DCCReference Include="FireDAC.dcp"/>
+        <DCCReference Include="FireDACCommonDriver.dcp"/>
+        <DCCReference Include="FireDACCommon.dcp"/>
+        <DCCReference Include="bindengine.dcp"/>
+        <DCCReference Include="bindcomp.dcp"/>
         <DCCReference Include="..\Source\uRetMensagemApiOficial.pas"/>
         <DCCReference Include="..\Source\uWPPCloudAPI.pas">
             <Form>/Web.WebBroker;</Form>
