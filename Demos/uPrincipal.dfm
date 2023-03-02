@@ -19,9 +19,15 @@ object frmPrincipal: TfrmPrincipal
   object Label1: TLabel
     Left = 18
     Top = 18
-    Width = 72
+    Width = 81
     Height = 13
     Caption = 'Key Cloud API:'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = [fsBold]
+    ParentFont = False
   end
   object Label3: TLabel
     Left = 18
@@ -33,21 +39,28 @@ object frmPrincipal: TfrmPrincipal
   object Label5: TLabel
     Left = 18
     Top = 59
-    Width = 102
+    Width = 112
     Height = 13
     Caption = 'PHONE_NUMBER_ID:'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = [fsBold]
+    ParentFont = False
   end
   object edtTokenAPI: TEdit
     Left = 16
     Top = 33
     Width = 345
     Height = 21
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
     TabOrder = 0
-    Text = 
-      'EAAP56XaRTS0BAFKTaNC2BbJDZAlZAGo6MOGOMs5YHIaZBcQsJXBdD2EEMHXU6Gt' +
-      'ganOxPb1YOkIKZCHv3xHmYc6wdGz4DzMG3kITRnCpG58ZACMVBpOuUxoaxo1VcqZ' +
-      'CUKZBWe90dZCy12ZBIe6I927v5fHo2mMMQYTykdOwykGrZAjUtSGeZAQF2tRjkEb' +
-      'ujGqlPd8cmHkFDvsgQZDZD'
   end
   object GroupBox1: TGroupBox
     AlignWithMargins = True
@@ -503,9 +516,24 @@ object frmPrincipal: TfrmPrincipal
   object edtPHONE_NUMBER_ID: TEdit
     Left = 16
     Top = 74
-    Width = 345
+    Width = 265
     Height = 21
     TabOrder = 4
+  end
+  object BitBtn1: TBitBtn
+    Left = 286
+    Top = 72
+    Width = 75
+    Height = 25
+    Caption = 'Salvar'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = [fsBold]
+    ParentFont = False
+    TabOrder = 5
+    OnClick = BitBtn1Click
   end
   object ImageList1: TImageList
     DrawingStyle = dsTransparent

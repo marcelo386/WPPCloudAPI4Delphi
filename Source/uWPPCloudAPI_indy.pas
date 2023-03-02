@@ -4,8 +4,7 @@ interface
 
 uses
   System.SysUtils, System.Classes, System.JSON, System.Net.HttpClient, System.Net.URLClient, IdSSLOpenSSL, IdHTTP,
-  uRetMensagemApiOficial, StrUtils, Horse, Horse.Commons,  Horse.Core, web.WebBroker,
-  RESTRequest4D;
+  uRetMensagemApiOficial, StrUtils, Horse, Horse.Commons, Horse.HTTP, Horse.Core, web.WebBroker;
 
 
 type
@@ -88,13 +87,25 @@ end;
 
 function TWPPCloudAPI.MarkIsRead(waid, message_id: string): string;
 var
+  http: TIdHTTP;
+  ssl: TIdSSLIOHandlerSocketOpenSSL;
+  postData: TStringStream;
   response: string;
   json: string;
   UTF8Texto: UTF8String;
   MessagePayload: uRetMensagemApiOficial.TMessagePayload;
 begin
   Result := '';
+
+  http := TIdHTTP.Create;
+  ssl := TIdSSLIOHandlerSocketOpenSSL.Create(http);
   try
+    http.IOHandler := ssl;
+    http.Request.ContentType := 'application/json';
+    http.Request.ContentEncoding := 'UTF-8';
+
+    http.Request.CustomHeaders.Values['Authorization'] := 'Bearer ' + TokenApiOficial;
+
     if (length(waid) = 11) or (length(waid) = 10) then
       waid := DDIDefault.ToString + waid;
 
@@ -106,16 +117,9 @@ begin
       '}';
 
     UTF8Texto := UTF8Encode(json);
-
+    postData := TStringStream.Create(UTF8Texto);
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages')
-        .ContentType('application/json')
-        .TokenBearer(TokenApiOficial)
-        .AddBody(UTF8Texto)
-        .Post
-        .Content;
-
-
+      response := http.Post('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages', postData);
       //gravar_log(response);
     except
       on E: Exception do
@@ -128,21 +132,38 @@ begin
 
     Result := response;
 
+    //MessagePayload := TMessagePayload.FromJSON(response);
+    //Result := MessagePayload.Messages[0].ID;
+    //gravar_log('Unique id: ' + MessagePayload.Messages[0].ID);
 
   finally
+    postData.Free;
+    ssl.Free;
+    http.Free;
   end;
 
 end;
 
 function TWPPCloudAPI.SendButton(waid, body, actions, header, footer: string): string;
 var
+  http: TIdHTTP;
+  ssl: TIdSSLIOHandlerSocketOpenSSL;
+  postData: TStringStream;
   response: string;
   json: string;
   UTF8Texto: UTF8String;
   MessagePayload: uRetMensagemApiOficial.TMessagePayload;
 begin
   Result := '';
+
+  http := TIdHTTP.Create;
+  ssl := TIdSSLIOHandlerSocketOpenSSL.Create(http);
   try
+    http.IOHandler := ssl;
+    http.Request.ContentType := 'application/json';
+    http.Request.ContentEncoding := 'UTF-8';
+
+    http.Request.CustomHeaders.Values['Authorization'] := 'Bearer ' + TokenApiOficial;
 
     if (length(waid) = 11) or (length(waid) = 10) then
       waid := DDIDefault.ToString + waid;
@@ -198,15 +219,9 @@ begin
       '}';
 
     UTF8Texto := UTF8Encode(json);
-
+    postData := TStringStream.Create(UTF8Texto);
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages')
-        .ContentType('application/json')
-        .TokenBearer(TokenApiOficial)
-        .AddBody(UTF8Texto)
-        .Post
-        .Content;
-
+      response := http.Post('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages', postData);
       //gravar_log(response);
     except
       on E: Exception do
@@ -218,19 +233,14 @@ begin
       end;
     end;
 
-    try
-      MessagePayload := TMessagePayload.FromJSON(response);
-      Result := MessagePayload.Messages[0].ID;
-    except
-      on E: Exception do
-      begin
-        Result := 'Error: ' + e.Message;
-        Exit;
-      end;
-    end;
-
+    MessagePayload := TMessagePayload.FromJSON(response);
+    //gravar_log('Unique id: ' + MessagePayload.Messages[0].ID);
+    Result := MessagePayload.Messages[0].ID;
 
   finally
+    postData.Free;
+    ssl.Free;
+    http.Free;
   end;
 
 end;
@@ -246,7 +256,14 @@ var
   UTF8Texto: UTF8String;
 begin
   Result := '';
+
+  http := TIdHTTP.Create;
+  ssl := TIdSSLIOHandlerSocketOpenSSL.Create(http);
   try
+    http.IOHandler := ssl;
+    http.Request.ContentType := 'application/json';
+    http.Request.ContentEncoding := 'UTF-8';
+    http.Request.CustomHeaders.Values['Authorization'] := 'Bearer ' + TokenApiOficial;
 
     if (length(waid) = 11) or (length(waid) = 10) then
       waid := DDIDefault.ToString + waid;
@@ -314,16 +331,10 @@ begin
       '}';
 
     UTF8Texto := UTF8Encode(json);
+    postData := TStringStream.Create(UTF8Texto);
+
     try
-
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages')
-        .ContentType('application/json')
-        .TokenBearer(TokenApiOficial)
-        .AddBody(UTF8Texto)
-        .Post
-        .Content;
-
-
+      response := http.Post('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages', postData);
       //gravar_log(response);
     except
       on E: Exception do
@@ -336,31 +347,40 @@ begin
       end;
     end;
 
-    try
-      MessagePayload := TMessagePayload.FromJSON(response);
-      Result := MessagePayload.Messages[0].ID;
-    except
-      on E: Exception do
-      begin
-        Result := 'Error: ' + e.Message;
-        Exit;
-      end;
-    end;
+    MessagePayload := TMessagePayload.FromJSON(response);
+    Result := MessagePayload.Messages[0].ID;
 
+    //MemoLogApiOficial.Lines.Add(response);
+    //MemoLogApiOficial.Lines.Add('');
+    //MemoLogApiOficial.Lines.Add('Unique id: ' + MessagePayload.Messages[0].ID);
+    //gravar_log('Unique id: ' + MessagePayload.Messages[0].ID);
   finally
+    postData.Free;
+    ssl.Free;
+    http.Free;
   end;
 
 end;
 
 function TWPPCloudAPI.SendFile(waid, body, typeFile, url: string): string;
 var
+  http: TIdHTTP;
+  ssl: TIdSSLIOHandlerSocketOpenSSL;
+  postData: TStringStream;
   response: string;
   json: string;
   UTF8Texto: UTF8String;
   MessagePayload: uRetMensagemApiOficial.TMessagePayload;
 begin
   Result := '';
+
+  http := TIdHTTP.Create;
+  ssl := TIdSSLIOHandlerSocketOpenSSL.Create(http);
   try
+    http.IOHandler := ssl;
+    http.Request.ContentType := 'application/json';
+    http.Request.CustomHeaders.Values['Authorization'] := 'Bearer ' + TokenApiOficial;
+
     if (length(waid) = 11) or (length(waid) = 10) then
       waid := DDIDefault.ToString + waid;
 
@@ -380,14 +400,10 @@ begin
       '}';
 
     UTF8Texto := UTF8Encode(json);
-    try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages')
-        .ContentType('application/json')
-        .TokenBearer(TokenApiOficial)
-        .AddBody(UTF8Texto)
-        .Post
-        .Content;
+    postData := TStringStream.Create(UTF8Texto);
 
+    try
+      response := http.Post('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages', postData);
       //gravar_log(response);
     except
       on E: Exception do
@@ -400,35 +416,42 @@ begin
       end;
     end;
 
-    try
-      MessagePayload := TMessagePayload.FromJSON(response);
-      Result := MessagePayload.Messages[0].ID;
-    except
-      on E: Exception do
-      begin
-        Result := 'Error: ' + e.Message;
-        Exit;
-      end;
-    end;
+    MessagePayload := TMessagePayload.FromJSON(response);
+    Result := MessagePayload.Messages[0].ID;
 
     //MemoLogApiOficial.Lines.Add(response);
     //MemoLogApiOficial.Lines.Add('');
     //MemoLogApiOficial.Lines.Add('Unique id: ' + MessagePayload.Messages[0].ID);
     //gravar_log('Unique id: ' + MessagePayload.Messages[0].ID);
   finally
+    postData.Free;
+    ssl.Free;
+    http.Free;
   end;
 
 end;
 
 function TWPPCloudAPI.SendListMenu(waid, body, sections, header, footer, Button_Text: string): string;
 var
+  http: TIdHTTP;
+  ssl: TIdSSLIOHandlerSocketOpenSSL;
+  postData: TStringStream;
   response: string;
   json: string;
   UTF8Texto: UTF8String;
   MessagePayload: uRetMensagemApiOficial.TMessagePayload;
 begin
   Result := '';
+
+  http := TIdHTTP.Create;
+  ssl := TIdSSLIOHandlerSocketOpenSSL.Create(http);
   try
+    http.IOHandler := ssl;
+    http.Request.ContentType := 'application/json';
+    http.Request.ContentEncoding := 'UTF-8';
+
+    http.Request.CustomHeaders.Values['Authorization'] := 'Bearer ' + TokenApiOficial;
+
     if (length(waid) = 11) or (length(waid) = 10) then
       waid := DDIDefault.ToString + waid;
 
@@ -503,16 +526,9 @@ begin
     //json := Trim(json);
     //json := EscapeJsonString(json);
     UTF8Texto := UTF8Encode(json);
-
+    postData := TStringStream.Create(UTF8Texto);
     try
-
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages')
-        .ContentType('application/json')
-        .TokenBearer(TokenApiOficial)
-        .AddBody(UTF8Texto)
-        .Post
-        .Content;
-
+      response := http.Post('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages', postData);
       //gravar_log(response);
     except
       on E: Exception do
@@ -525,25 +541,26 @@ begin
       end;
     end;
 
-    try
-      MessagePayload := TMessagePayload.FromJSON(response);
-      Result := MessagePayload.Messages[0].ID;
-    except
-      on E: Exception do
-      begin
-        Result := 'Error: ' + e.Message;
-        Exit;
-      end;
-    end;
-
+    //MemoLogApiOficial.Lines.Add(response);
+    //MemoLogApiOficial.Lines.Add('');
+    MessagePayload := TMessagePayload.FromJSON(response);
+    //MemoLogApiOficial.Lines.Add('Unique id: ' + MessagePayload.Messages[0].ID);
+    //gravar_log('Unique id: ' + MessagePayload.Messages[0].ID);
+    Result := MessagePayload.Messages[0].ID;
 
   finally
+    postData.Free;
+    ssl.Free;
+    http.Free;
   end;
 
 end;
 
 function TWPPCloudAPI.SendLocation(waid, body, Location, header, footer: string): string;
 var
+  http: TIdHTTP;
+  ssl: TIdSSLIOHandlerSocketOpenSSL;
+  postData: TStringStream;
   response: string;
   json: string;
   UTF8Texto: UTF8String;
@@ -551,7 +568,15 @@ var
 begin
   Result := '';
 
+  http := TIdHTTP.Create;
+  ssl := TIdSSLIOHandlerSocketOpenSSL.Create(http);
   try
+    http.IOHandler := ssl;
+    http.Request.ContentType := 'application/json';
+    http.Request.ContentEncoding := 'UTF-8';
+
+    http.Request.CustomHeaders.Values['Authorization'] := 'Bearer ' + TokenApiOficial;
+
     if (length(waid) = 11) or (length(waid) = 10) then
       waid := DDIDefault.ToString + waid;
 
@@ -586,15 +611,9 @@ begin
       '}';
 
     UTF8Texto := UTF8Encode(json);
-
+    postData := TStringStream.Create(UTF8Texto);
     try
-
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages')
-        .ContentType('application/json')
-        .TokenBearer(TokenApiOficial)
-        .AddBody(UTF8Texto)
-        .Post
-        .Content;
+      response := http.Post('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages', postData);
       //gravar_log(response);
     except
       on E: Exception do
@@ -606,24 +625,23 @@ begin
       end;
     end;
 
-    try
-      MessagePayload := TMessagePayload.FromJSON(response);
-      Result := MessagePayload.Messages[0].ID;
-    except
-      on E: Exception do
-      begin
-        Result := 'Error: ' + e.Message;
-        Exit;
-      end;
-    end;
+    MessagePayload := TMessagePayload.FromJSON(response);
+    Result := MessagePayload.Messages[0].ID;
+    //gravar_log('Unique id: ' + MessagePayload.Messages[0].ID);
 
   finally
+    postData.Free;
+    ssl.Free;
+    http.Free;
   end;
 
 end;
 
 function TWPPCloudAPI.SendReaction(waid, message_id, emoji: string): string;
 var
+  http: TIdHTTP;
+  ssl: TIdSSLIOHandlerSocketOpenSSL;
+  postData: TStringStream;
   response: string;
   json: string;
   UTF8Texto: UTF8String;
@@ -631,8 +649,15 @@ var
 begin
   Result := '';
 
-
+  http := TIdHTTP.Create;
+  ssl := TIdSSLIOHandlerSocketOpenSSL.Create(http);
   try
+    http.IOHandler := ssl;
+    http.Request.ContentType := 'application/json';
+    http.Request.ContentEncoding := 'UTF-8';
+
+    http.Request.CustomHeaders.Values['Authorization'] := 'Bearer ' + TokenApiOficial;
+
     if (length(waid) = 11) or (length(waid) = 10) then
       waid := DDIDefault.ToString + waid;
 
@@ -649,13 +674,9 @@ begin
       '}';
 
     UTF8Texto := UTF8Encode(json);
+    postData := TStringStream.Create(UTF8Texto);
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages')
-        .ContentType('application/json')
-        .TokenBearer(TokenApiOficial)
-        .AddBody(UTF8Texto)
-        .Post
-        .Content;
+      response := http.Post('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages', postData);
       //gravar_log(response);
     except
       on E: Exception do
@@ -667,25 +688,23 @@ begin
       end;
     end;
 
-    try
-      MessagePayload := TMessagePayload.FromJSON(response);
-      Result := MessagePayload.Messages[0].ID;
-    except
-      on E: Exception do
-      begin
-        Result := 'Error: ' + e.Message;
-        Exit;
-      end;
-    end;
+    MessagePayload := TMessagePayload.FromJSON(response);
+    Result := MessagePayload.Messages[0].ID;
+    //gravar_log('Unique id: ' + MessagePayload.Messages[0].ID);
 
   finally
-
+    postData.Free;
+    ssl.Free;
+    http.Free;
   end;
 
 end;
 
 function TWPPCloudAPI.SendReplies(waid, message_id, reply_body: string; previewurl: string): string;
 var
+  http: TIdHTTP;
+  ssl: TIdSSLIOHandlerSocketOpenSSL;
+  postData: TStringStream;
   response: string;
   json: string;
   MessagePayload: uRetMensagemApiOficial.TMessagePayload;
@@ -693,8 +712,13 @@ var
 begin
   Result := '';
 
+  http := TIdHTTP.Create;
+  ssl := TIdSSLIOHandlerSocketOpenSSL.Create(http);
   try
-
+    http.IOHandler := ssl;
+    http.Request.ContentType := 'application/json';
+    http.Request.ContentEncoding := 'UTF-8';
+    http.Request.CustomHeaders.Values['Authorization'] := 'Bearer ' + TokenApiOficial;
 
     if (length(waid) = 11) or (length(waid) = 10) then
       waid := DDIDefault.ToString + waid;
@@ -716,14 +740,10 @@ begin
       '}';
 
     UTF8Texto := UTF8Encode(json);
+    postData := TStringStream.Create(UTF8Texto);
 
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages')
-        .ContentType('application/json')
-        .TokenBearer(TokenApiOficial)
-        .AddBody(UTF8Texto)
-        .Post
-        .Content;
+      response := http.Post('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages', postData);
       //gravar_log(response);
     except
       on E: Exception do
@@ -736,32 +756,40 @@ begin
     end;
 
 
-    try
-      MessagePayload := TMessagePayload.FromJSON(response);
-      Result := MessagePayload.Messages[0].ID;
-    except
-      on E: Exception do
-      begin
-        Result := 'Error: ' + e.Message;
-        Exit;
-      end;
-    end;
-
-
+    MessagePayload := TMessagePayload.FromJSON(response);
+    Result := MessagePayload.Messages[0].ID;
+    //MemoLogApiOficial.Lines.Add(response);
+    //MemoLogApiOficial.Lines.Add('');
+    //MemoLogApiOficial.Lines.Add('Unique id: ' + MessagePayload.Messages[0].ID);
+    //gravar_log('Unique id: ' + MessagePayload.Messages[0].ID);
   finally
+    postData.Free;
+    ssl.Free;
+    http.Free;
   end;
 
 end;
 
 function TWPPCloudAPI.SendText(waid, body, previewurl: string): string;
 var
+  http: TIdHTTP;
+  ssl: TIdSSLIOHandlerSocketOpenSSL;
+  postData: TStringStream;
   response: string;
   json: string;
   MessagePayload: uRetMensagemApiOficial.TMessagePayload;
   UTF8Texto: UTF8String;
 begin
   Result := '';
+
+  http := TIdHTTP.Create;
+  ssl := TIdSSLIOHandlerSocketOpenSSL.Create(http);
   try
+    http.IOHandler := ssl;
+    http.Request.ContentType := 'application/json';
+    http.Request.ContentEncoding := 'UTF-8';
+    http.Request.CustomHeaders.Values['Authorization'] := 'Bearer ' + TokenApiOficial;
+
     if (length(waid) = 11) or (length(waid) = 10) then
       waid := DDIDefault.ToString + waid;
 
@@ -780,14 +808,10 @@ begin
       '}';
 
     UTF8Texto := UTF8Encode(json);
+    postData := TStringStream.Create(UTF8Texto);
 
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages')
-        .ContentType('application/json')
-        .TokenBearer(TokenApiOficial)
-        .AddBody(UTF8Texto)
-        .Post
-        .Content;
+      response := http.Post('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages', postData);
       //gravar_log(response);
     except
       on E: Exception do
@@ -800,22 +824,16 @@ begin
     end;
 
 
-    try
-      MessagePayload := TMessagePayload.FromJSON(response);
-      Result := MessagePayload.Messages[0].ID;
-    except
-      on E: Exception do
-      begin
-        Result := 'Error: ' + e.Message;
-        Exit;
-      end;
-    end;
-
+    MessagePayload := TMessagePayload.FromJSON(response);
+    Result := MessagePayload.Messages[0].ID;
     //MemoLogApiOficial.Lines.Add(response);
     //MemoLogApiOficial.Lines.Add('');
     //MemoLogApiOficial.Lines.Add('Unique id: ' + MessagePayload.Messages[0].ID);
     //gravar_log('Unique id: ' + MessagePayload.Messages[0].ID);
   finally
+    postData.Free;
+    ssl.Free;
+    http.Free;
   end;
 
 
@@ -823,22 +841,26 @@ end;
 
 function TWPPCloudAPI.Send_Template(jsonTemplate: string): string;
 var
+  http: TIdHTTP;
+  ssl: TIdSSLIOHandlerSocketOpenSSL;
+  postData: TStringStream;
   response, json: string;
   MessagePayload: uRetMensagemApiOficial.TMessagePayload;
   UTF8Texto: UTF8String;
 begin
-
+  http := TIdHTTP.Create;
+  ssl := TIdSSLIOHandlerSocketOpenSSL.Create(http);
   try
+    http.IOHandler := ssl;
+    http.Request.ContentType := 'application/json';
+    http.Request.CustomHeaders.Values['Authorization'] := 'Bearer ' + TokenApiOficial;
+
     json := jsonTemplate;
     UTF8Texto := UTF8Encode(json);
+    postData := TStringStream.Create(UTF8Texto);
 
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages')
-        .ContentType('application/json')
-        .TokenBearer(TokenApiOficial)
-        .AddBody(UTF8Texto)
-        .Post
-        .Content;
+      response := http.Post('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages', postData);
     except
       on E: Exception do
       begin
@@ -847,40 +869,43 @@ begin
       end;
     end;
 
-    try
-      MessagePayload := TMessagePayload.FromJSON(response);
-      Result := MessagePayload.Messages[0].ID;
-    except
-      on E: Exception do
-      begin
-        Result := 'Error: ' + e.Message;
-        Exit;
-      end;
-    end;
+
+
+    MessagePayload := TMessagePayload.FromJSON(response);
+    Result := MessagePayload.Messages[0].ID;
 
   finally
+    postData.Free;
+    ssl.Free;
+    http.Free;
   end;
 end;
 
 function TWPPCloudAPI.Send_Template_hello_world(waid: string): string;
 var
+  http: TIdHTTP;
+  ssl: TIdSSLIOHandlerSocketOpenSSL;
+  postData: TStringStream;
   response, json: string;
   MessagePayload: uRetMensagemApiOficial.TMessagePayload;
   UTF8Texto: UTF8String;
 begin
+  http := TIdHTTP.Create;
+  ssl := TIdSSLIOHandlerSocketOpenSSL.Create(http);
   try
+    http.IOHandler := ssl;
+    http.Request.ContentType := 'application/json';
+    http.Request.CustomHeaders.Values['Authorization'] := 'Bearer ' + TokenApiOficial;
+
     if (length(waid) = 11) or (length(waid) = 10) then
       waid := DDIDefault.ToString + waid;
 
     json := '{ "messaging_product": "whatsapp", "to": "' + waid + '", "type": "template", "template": { "name": "hello_world", "language": { "code": "en_US" } } }';
     UTF8Texto := UTF8Encode(json);
+    postData := TStringStream.Create(UTF8Texto);
 
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages')
-        .ContentType('application/json')
-        .TokenBearer(TokenApiOficial)
-        .AddBody(UTF8Texto)
-        .Post.Content;
+      response := http.Post('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages', postData);
     except
       on E: Exception do
       begin
@@ -889,19 +914,15 @@ begin
       end;
     end;
 
-    try
-      MessagePayload := TMessagePayload.FromJSON(response);
-      Result := MessagePayload.Messages[0].ID;
-    except
-      on E: Exception do
-      begin
-        Result := 'Error: ' + e.Message;
-        Exit;
-      end;
-    end;
 
+
+    MessagePayload := TMessagePayload.FromJSON(response);
+    Result := MessagePayload.Messages[0].ID;
 
   finally
+    postData.Free;
+    ssl.Free;
+    http.Free;
   end;
 end;
 

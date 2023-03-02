@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls, System.ImageList, Vcl.ImgList, uWPPCloudAPI,
-  uWhatsAppBusinessClasses;
+  uWhatsAppBusinessClasses, IniFiles, System.IOUtils, Vcl.Buttons;
 
 type
   TfrmPrincipal = class(TForm)
@@ -57,6 +57,7 @@ type
     OpenDialog1: TOpenDialog;
     edtPHONE_NUMBER_ID: TEdit;
     Label5: TLabel;
+    BitBtn1: TBitBtn;
     procedure btnTextoSimplesClick(Sender: TObject);
     procedure btnBotaoSimplesClick(Sender: TObject);
     procedure btnListaMenuClick(Sender: TObject);
@@ -73,6 +74,9 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure WPPCloudAPI1Response(Sender: TObject; Response: string);
+    procedure SalvarIni;
+    procedure LerConfiguracoes;
+    procedure BitBtn1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -86,6 +90,11 @@ var
 implementation
 
 {$R *.dfm}
+
+procedure TfrmPrincipal.BitBtn1Click(Sender: TObject);
+begin
+  SalvarIni;
+end;
 
 procedure TfrmPrincipal.BitBtn2Click(Sender: TObject);
 begin
@@ -533,12 +542,47 @@ end;
 procedure TfrmPrincipal.FormCreate(Sender: TObject);
 begin
   WPPCloudAPI1.Port := 8020;
-
+  LerConfiguracoes;
 end;
 
 procedure TfrmPrincipal.FormShow(Sender: TObject);
 begin
   WPPCloudAPI1.StartServer;
+end;
+
+procedure TfrmPrincipal.LerConfiguracoes;
+var
+  NomeArquivo: string;
+  ArquivoConfig: TCustomIniFile;
+begin
+  NomeArquivo := TPath.Combine(ExtractFilePath(ParamStr(0)), 'WPPCloudAPI.ini ');
+  ArquivoConfig := TMemIniFile.Create(NomeArquivo);
+
+  edtTokenAPI.Text := ArquivoConfig.ReadString('CONFIGURACAO', 'TokenAPI', '');
+  edtPHONE_NUMBER_ID.Text := ArquivoConfig.ReadString('CONFIGURACAO', 'PHONE_NUMBER_ID', '');
+
+  ArquivoConfig.UpdateFile;
+
+  FreeAndNil(ArquivoConfig);
+
+end;
+
+procedure TfrmPrincipal.SalvarIni;
+var
+  NomeArquivo: string;
+  ArquivoConfig: TCustomIniFile;
+begin
+  NomeArquivo := TPath.Combine(ExtractFilePath(ParamStr(0)), 'WPPCloudAPI.ini ');
+  ArquivoConfig := TMemIniFile.Create(NomeArquivo);
+
+  ArquivoConfig.writeString('CONFIGURACAO', 'TokenAPI', edtTokenAPI.Text);
+  ArquivoConfig.writeString('CONFIGURACAO', 'PHONE_NUMBER_ID', edtPHONE_NUMBER_ID.Text);
+
+  ArquivoConfig.UpdateFile;
+
+  FreeAndNil(ArquivoConfig);
+
+  LerConfiguracoes;
 end;
 
 procedure TfrmPrincipal.WPPCloudAPI1Response(Sender: TObject; Response: string);

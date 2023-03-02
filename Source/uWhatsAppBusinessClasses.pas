@@ -112,6 +112,7 @@ private
   FAudio: TAudioClass;
   FVideo: TVideoClass;
   FDocument: TDocumentClass;
+  FSticker: TStickerClass;
 public
   property button: TButtonClass read FButton write FButton;
   property text: TTextClass read FText write FText;
