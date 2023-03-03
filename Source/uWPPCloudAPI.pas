@@ -1,3 +1,19 @@
+{
+####################################################################################################################
+  Obs:
+     - Código aberto a comunidade Delphi, desde que mantenha os dados dos autores e mantendo sempre o nome do IDEALIZADOR
+       Marcelo dos Santos de Oliveira;
+
+####################################################################################################################
+                                  Evolução do Código
+####################################################################################################################
+  Autor........: Marcelo Oliveira
+  Email........: marcelo.broz@hotmail.com
+  Data.........: 01/03/2023
+  Identificador: @Marcelo
+  Modificação..:
+####################################################################################################################
+}
 unit uWPPCloudAPI;
 
 interface
@@ -10,7 +26,7 @@ uses
 
 type
   {Events}
-  TOnRetSendMessage = Procedure(Sender : TObject; Response: TMessagePayload) of object;
+  TOnRetSendMessage = Procedure(Sender : TObject; Response: string) of object;
   TResponseEvent = Procedure(Sender : TObject; Response: string) of object;
 
   TWPPCloudAPI = class(TComponent)
@@ -219,6 +235,9 @@ begin
     end;
 
     try
+      if Assigned(FOnRetSendMessage) then
+        FOnRetSendMessage(Self, Response);
+
       MessagePayload := TMessagePayload.FromJSON(response);
       Result := MessagePayload.Messages[0].ID;
     except
@@ -337,6 +356,9 @@ begin
     end;
 
     try
+      if Assigned(FOnRetSendMessage) then
+        FOnRetSendMessage(Self, Response);
+
       MessagePayload := TMessagePayload.FromJSON(response);
       Result := MessagePayload.Messages[0].ID;
     except
@@ -401,6 +423,9 @@ begin
     end;
 
     try
+      if Assigned(FOnRetSendMessage) then
+        FOnRetSendMessage(Self, Response);
+
       MessagePayload := TMessagePayload.FromJSON(response);
       Result := MessagePayload.Messages[0].ID;
     except
@@ -526,6 +551,9 @@ begin
     end;
 
     try
+      if Assigned(FOnRetSendMessage) then
+        FOnRetSendMessage(Self, Response);
+
       MessagePayload := TMessagePayload.FromJSON(response);
       Result := MessagePayload.Messages[0].ID;
     except
@@ -607,6 +635,9 @@ begin
     end;
 
     try
+      if Assigned(FOnRetSendMessage) then
+        FOnRetSendMessage(Self, Response);
+
       MessagePayload := TMessagePayload.FromJSON(response);
       Result := MessagePayload.Messages[0].ID;
     except
@@ -668,6 +699,9 @@ begin
     end;
 
     try
+      if Assigned(FOnRetSendMessage) then
+        FOnRetSendMessage(Self, Response);
+
       MessagePayload := TMessagePayload.FromJSON(response);
       Result := MessagePayload.Messages[0].ID;
     except
@@ -737,6 +771,9 @@ begin
 
 
     try
+      if Assigned(FOnRetSendMessage) then
+        FOnRetSendMessage(Self, Response);
+
       MessagePayload := TMessagePayload.FromJSON(response);
       Result := MessagePayload.Messages[0].ID;
     except
@@ -801,6 +838,9 @@ begin
 
 
     try
+      if Assigned(FOnRetSendMessage) then
+        FOnRetSendMessage(Self, Response);
+
       MessagePayload := TMessagePayload.FromJSON(response);
       Result := MessagePayload.Messages[0].ID;
     except
@@ -848,6 +888,9 @@ begin
     end;
 
     try
+      if Assigned(FOnRetSendMessage) then
+        FOnRetSendMessage(Self, Response);
+
       MessagePayload := TMessagePayload.FromJSON(response);
       Result := MessagePayload.Messages[0].ID;
     except
@@ -890,6 +933,9 @@ begin
     end;
 
     try
+      if Assigned(FOnRetSendMessage) then
+        FOnRetSendMessage(Self, Response);
+
       MessagePayload := TMessagePayload.FromJSON(response);
       Result := MessagePayload.Messages[0].ID;
     except
@@ -1000,7 +1046,8 @@ begin
         end;
 
 
-
+        if Assigned(FOnRetSendMessage) then
+          FOnRetSendMessage(Self, Response);
         //MessagePayload := TMessagePayload.FromJSON(response);
         //Result := MessagePayload.Messages[0].ID;
         Result := response;

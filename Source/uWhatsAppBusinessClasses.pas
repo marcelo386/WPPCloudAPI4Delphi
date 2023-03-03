@@ -1,3 +1,19 @@
+{
+####################################################################################################################
+  Obs:
+     - Código aberto a comunidade Delphi, desde que mantenha os dados dos autores e mantendo sempre o nome do IDEALIZADOR
+       Marcelo dos Santos de Oliveira;
+
+####################################################################################################################
+                                  Evolução do Código
+####################################################################################################################
+  Autor........: Marcelo Oliveira
+  Email........: marcelo.broz@hotmail.com
+  Data.........: 01/03/2023
+  Identificador: @Marcelo
+  Modificação..:
+####################################################################################################################
+}
 unit uWhatsAppBusinessClasses;
 
 interface

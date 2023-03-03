@@ -1,3 +1,19 @@
+{
+####################################################################################################################
+  Obs:
+     - Código aberto a comunidade Delphi, desde que mantenha os dados dos autores e mantendo sempre o nome do IDEALIZADOR
+       Marcelo dos Santos de Oliveira;
+
+####################################################################################################################
+                                  Evolução do Código
+####################################################################################################################
+  Autor........: Marcelo Oliveira
+  Email........: marcelo.broz@hotmail.com
+  Data.........: 01/03/2023
+  Identificador: @Marcelo
+  Modificação..:
+####################################################################################################################
+}
 unit uPrincipal;
 
 interface
@@ -5,7 +21,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls, System.ImageList, Vcl.ImgList, uWPPCloudAPI,
-  uWhatsAppBusinessClasses, IniFiles, System.IOUtils, Vcl.Buttons;
+  uWhatsAppBusinessClasses, IniFiles, System.IOUtils, Vcl.Buttons, Vcl.Imaging.pngimage;
 
 type
   TfrmPrincipal = class(TForm)
@@ -58,6 +74,12 @@ type
     edtPHONE_NUMBER_ID: TEdit;
     Label5: TLabel;
     BitBtn1: TBitBtn;
+    Label6: TLabel;
+    edtPORT_SERVER: TEdit;
+    Label7: TLabel;
+    edtDDI_Default: TEdit;
+    Image2: TImage;
+    Label8: TLabel;
     procedure btnTextoSimplesClick(Sender: TObject);
     procedure btnBotaoSimplesClick(Sender: TObject);
     procedure btnListaMenuClick(Sender: TObject);
@@ -77,6 +99,7 @@ type
     procedure SalvarIni;
     procedure LerConfiguracoes;
     procedure BitBtn1Click(Sender: TObject);
+    procedure WPPCloudAPI1RetSendMessage(Sender: TObject; Response: string);
   private
     { Private declarations }
   public
@@ -547,6 +570,10 @@ end;
 
 procedure TfrmPrincipal.FormShow(Sender: TObject);
 begin
+  WPPCloudAPI1.TokenApiOficial := edtTokenAPI.Text;
+  WPPCloudAPI1.PHONE_NUMBER_ID := edtPHONE_NUMBER_ID.Text;
+  WPPCloudAPI1.DDIDefault := StrToIntDef(edtDDI_Default.Text, 55);
+  WPPCloudAPI1.Port := StrToIntDef(edtPORT_SERVER.Text, 8020);
   WPPCloudAPI1.StartServer;
 end;
 
@@ -560,6 +587,8 @@ begin
 
   edtTokenAPI.Text := ArquivoConfig.ReadString('CONFIGURACAO', 'TokenAPI', '');
   edtPHONE_NUMBER_ID.Text := ArquivoConfig.ReadString('CONFIGURACAO', 'PHONE_NUMBER_ID', '');
+  edtPORT_SERVER.Text := ArquivoConfig.ReadString('CONFIGURACAO', 'PORT_SERVER', '8020');
+  edtDDI_Default.Text := ArquivoConfig.ReadString('CONFIGURACAO', 'DDI_Default', '55');
 
   ArquivoConfig.UpdateFile;
 
@@ -577,6 +606,8 @@ begin
 
   ArquivoConfig.writeString('CONFIGURACAO', 'TokenAPI', edtTokenAPI.Text);
   ArquivoConfig.writeString('CONFIGURACAO', 'PHONE_NUMBER_ID', edtPHONE_NUMBER_ID.Text);
+  ArquivoConfig.writeString('CONFIGURACAO', 'PORT_SERVER', edtPORT_SERVER.Text);
+  ArquivoConfig.writeString('CONFIGURACAO', 'DDI_Default', edtDDI_Default.Text);
 
   ArquivoConfig.UpdateFile;
 
@@ -622,6 +653,11 @@ begin
   except on E: Exception do
   end;
 
+end;
+
+procedure TfrmPrincipal.WPPCloudAPI1RetSendMessage(Sender: TObject; Response: string);
+begin
+  memResponse.Lines.Add(Response);
 end;
 
 end.

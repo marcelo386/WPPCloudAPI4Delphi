@@ -38,7 +38,8 @@ requires
   FireDACCommonDriver,
   FireDACCommon,
   bindengine,
-  bindcomp;
+  bindcomp,
+  RESTComponents;
 
 contains
   uRetMensagemApiOficial in '..\Source\uRetMensagemApiOficial.pas',
