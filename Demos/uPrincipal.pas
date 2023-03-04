@@ -170,6 +170,7 @@ begin
   end;}
 
   sResponse := WPPCloudAPI1.UploadMedia('');
+  //sResponse := WPPCloudAPI1.PostMediaFile('','');
   memResponse.Lines.Add(sResponse);
 
   {OpenDialog1.Execute();

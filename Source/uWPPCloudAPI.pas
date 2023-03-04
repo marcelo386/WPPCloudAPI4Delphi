@@ -21,7 +21,7 @@ interface
 uses
   System.SysUtils, System.Classes, System.JSON, System.Net.HttpClient, System.Net.URLClient, IdSSLOpenSSL, IdHTTP,
   uRetMensagemApiOficial, StrUtils, Horse, Horse.Commons,  Horse.Core, web.WebBroker,
-  RESTRequest4D;
+  RESTRequest4D, REST.Types, REST.Client, System.Net.Mime;
 
 
 type
@@ -39,7 +39,6 @@ type
     FPHONE_NUMBER_ID: string;
     FPort: Integer;
     function CaractersWeb(vText: string): string;
-
   protected
 
 
@@ -59,7 +58,12 @@ type
     function Send_Template_hello_world(waid: string): string;
     function Send_Template(jsonTemplate: string): string;
 
+    function TemplateGet(): string;
+    function TemplateCreate(jsonTemplate: string): string;
+    function TemplateDelete(AName: string): string;
+
     function UploadMedia(FileName: string): string;
+    function PostMediaFile(FileName, MediaType: string): string;
 
     procedure StartServer;
     procedure StopServer;
@@ -980,12 +984,171 @@ begin
   THorse.StopListen;
 end;
 
+function TWPPCloudAPI.TemplateCreate(jsonTemplate: string): string;
+var
+  response, json: string;
+  MessagePayload: uRetMensagemApiOficial.TMessagePayload;
+  UTF8Texto: UTF8String;
+  Retorno: IResponse;
+begin
+  try
+    json := jsonTemplate;
+    UTF8Texto := UTF8Encode(json);
+    try
+      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/message_templates')
+        .ContentType('application/json')
+        .TokenBearer(TokenApiOficial)
+        .AddBody(UTF8Texto)
+        .post;
+     response := Retorno.Content;
+    except
+      on E: Exception do
+      begin
+        Result := 'Error: ' + e.Message;
+        Exit;
+      end;
+    end;
+
+    MessagePayload := TMessagePayload.FromJSON(response);
+    Result := response;//MessagePayload.Messages[0].ID;
+  finally
+  end;
+end;
+
+function TWPPCloudAPI.TemplateDelete(AName: string): string;
+var
+  response: string;
+  MessagePayload: uRetMensagemApiOficial.TMessagePayload;
+  UTF8Texto: UTF8String;
+  Retorno: IResponse;
+begin
+  try
+    try
+      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/message_templates')
+        .ContentType('application/json')
+        .TokenBearer(TokenApiOficial)
+        .AddBody('{"name":"'+AName+'"}')
+        .Delete;
+      response := Retorno.Content;
+    except
+      on E: Exception do
+      begin
+        Result := 'Error: ' + e.Message;
+        Exit;
+      end;
+    end;
+
+
+    Result := response;
+  finally
+  end;
+end;
+
+function TWPPCloudAPI.TemplateGet: string;
+var
+  response: string;
+  MessagePayload: uRetMensagemApiOficial.TMessagePayload;
+  Retorno: IResponse;
+begin
+  try
+
+    try
+      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/message_templates')
+        .ContentType('application/json')
+        .TokenBearer(TokenApiOficial)
+        .Get;
+      if Retorno.StatusCode in [200,201] then
+      begin
+         response := Retorno.Content;
+         MessagePayload := TMessagePayload.FromJSON(response);
+        // if MessagePayload.Messages<>nil then
+         Result := response;//MessagePayload.Messages[0].ID;
+      end;
+    except
+      on E: Exception do
+      begin
+        Result := 'Error: ' + e.Message;
+        Exit;
+      end;
+    end;
+
+
+  finally
+  end;
+end;
+
+function TWPPCloudAPI.PostMediaFile(FileName, MediaType: string): string;
+var
+  RESTClient: TRESTClient;
+  RESTRequest: TRESTRequest;
+  RESTResponse: TRESTResponse;
+  MediaID: string;
+  AccessToken: string;
+  FilePath: string;
+  //MediaType: string;
+  MessagingProduct: string;
+  RequestBody: TMultipartFormData;
+begin
+  MediaID := PHONE_NUMBER_ID;//'123456';
+  AccessToken := TokenApiOficial;//'<ACCESS_TOKEN>';
+  FilePath := 'C:\Users\megao\Desktop\Temp\ArquivosTesteEnviar\Carta de Cobrança2.pdf';
+  MediaType := 'document/pdf';
+  MessagingProduct := 'whatsapp';
+
+  // Criando o objeto TRESTClient e configurando as propriedades básicas
+  RESTClient := TRESTClient.Create('https://graph.facebook.com/v15.0/');
+  RESTClient.Accept := 'application/json';
+  RESTClient.ContentType := 'multipart/form-data';
+  RESTClient.Params.AddItem('access_token', AccessToken, pkGETorPOST);
+
+  // Criando o objeto TRESTRequest e configurando as propriedades básicas
+  RESTRequest := TRESTRequest.Create(RESTClient);
+  RESTRequest.Method := rmPOST;
+  RESTRequest.Resource := MediaID + '/media';
+
+  // Criando o objeto TMultipartFormData e adicionando os campos da requisição
+  RequestBody := TMultipartFormData.Create;
+  //RequestBody.AddFile('file', FilePath, MediaType);
+  //RequestBody.AddField('type', MediaType, 'text/plain');
+  //RequestBody.AddField('messaging_product', MessagingProduct, 'text/plain');
+
+  RequestBody.AddFile('file', FilePath);
+  RequestBody.AddField('type', MediaType);
+  RequestBody.AddField('messaging_product', MessagingProduct);
+
+  // Configurando o corpo da requisição com o objeto TMultipartFormData
+  RESTRequest.AddParameter('multipart/form-data', RequestBody.ToString, pkREQUESTBODY);
+  //RESTRequest.AddParameter('multipart/form-data', RequestBody);
+
+  // Executando a requisição e obtendo a resposta
+  RESTResponse := TRESTResponse.Create(RESTRequest);
+  try
+    try
+      RESTRequest.Execute;
+      Result := RESTResponse.Content;
+    except
+      on E: Exception do
+      begin
+        Result := e.Message;
+        Exit;
+      end;
+    end;
+
+
+    // processar a resposta aqui...
+  finally
+    RESTResponse.Free;
+  end;
+end;
+
+
 function TWPPCloudAPI.UploadMedia(FileName: string): string;
 var
   http: TIdHTTP;
   ssl: TIdSSLIOHandlerSocketOpenSSL;
   postData: TStringStream;
   response, json, media_id: string;
+  Retorno: IResponse;
   MessagePayload: uRetMensagemApiOficial.TMessagePayload;
   UTF8Texto: UTF8String;
   Stream: TFileStream;
@@ -994,14 +1157,25 @@ var
   Str: string;
 begin
   try
-    Stream := TFileStream.Create('C:\Users\megao\Desktop\Comunidade_48x48.png', fmOpenRead or fmShareDenyWrite);
+    //Stream := TFileStream.Create('C:\Users\megao\Desktop\Comunidade_48x48.png', fmOpenRead or fmShareDenyWrite);
+    //FileName := '\\LAPTOP-3HVUPL9K\ArquivosTesteEnviar\Carta de Cobrança2.pdf';
+    FileName := '\\localhost\ArquivosTesteEnviar\Carta_de_Cobrança2.pdf';
     try
-      SetLength(Buffer, Stream.Size);
-      Stream.Read(Buffer[0], Length(Buffer));
-      Reader := TStreamReader.Create(Stream);
-      Str := Reader.ReadToEnd();
+      //SetLength(Buffer, Stream.Size);
+      //Stream.Read(Buffer[0], Length(Buffer));
+      //Reader := TStreamReader.Create(Stream);
+      //Str := Reader.ReadToEnd();
 
-      http := TIdHTTP.Create;
+      json :=
+        '  { ' +
+        '    "messaging_product": "whatsapp", ' +
+        '    "file": "' + FileName + '",' +
+        '    "type": "document/pdf" ' +
+        '  } ';
+
+      UTF8Texto := UTF8Encode(json);
+
+      (*http := TIdHTTP.Create;
       ssl := TIdSSLIOHandlerSocketOpenSSL.Create(http);
       try
         http.IOHandler := ssl;
@@ -1010,40 +1184,46 @@ begin
         http.Request.CustomHeaders.Values['Authorization'] := 'Bearer ' + TokenApiOficial;
 
 
+        //postData := TStringStream.Create(UTF8Texto);
 
-        json :=
-          '  { ' +
-          (*
-          '    "file": { ' +
-          '      "value": "fs.createReadStream(files.file.path)", ' +
-          '      "options": { ' +
-          '        "filename": "files.file.name", ' +
-          '        "contentType": "files.file.type" ' +
-          '      } ' +
-          '    }, ' +
-          *)
-          '    "messaging_product": "whatsapp", ' +
-          '    "file": "' + Str + '",' +
-          '    "type": "image/png" ' +
 
-          '  } ';
-
-        //json := '{ "messaging_product": "whatsapp", "to": "' + waid + '", "type": "template", "template": { "name": "hello_world", "language": { "code": "en_US" } } }';
-        UTF8Texto := UTF8Encode(json);
-        postData := TStringStream.Create(UTF8Texto);
-
-        media_id := FormatDateTime('YYYYMMDDhhmmsszzz', now);
+        media_id := PHONE_NUMBER_ID;
 
         try
           //response := http.Post('https://graph.facebook.com/v13.0/' + PHONE_NUMBER_ID + '/media', postData);
-          response := http.Post('https://graph.facebook.com/v15.0/' + media_id + '/media', postData);
+          //response := http.Post('https://graph.facebook.com/v15.0/' + media_id + '/media', postData);
+          response := http.Post('https://graph.facebook.com/v15.0/' + media_id + '/media', UTF8Texto);
         except
           on E: Exception do
           begin
-            Result := 'Error: ' + e.Message + #13#10 + Str + #13#10;
+            Result := 'Error: ' + e.Message + #13#10 + FileName + #13#10;
             Exit;
           end;
         end;
+        *)
+     try
+        //
+        try
+          Retorno := TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/media')
+            .ContentType('multipart/form-data')
+            //.ContentType('application/json')
+            .TokenBearer(TokenApiOficial)
+            .AddField('messaging_product', 'whatsapp')
+            .AddField('type', 'application/pdf')
+            .AddFile('file', FileName)
+            //.AddBody(UTF8Texto)
+            .Post;
+            //.Post.Content;
+
+          Response := Retorno.Content;
+        except
+          on E: Exception do
+          begin
+            Result := 'Error: ' + e.Message;
+            Exit;
+          end;
+        end;
+
 
 
         if Assigned(FOnRetSendMessage) then
@@ -1059,8 +1239,8 @@ begin
       end;
       //WriteLn(Format('Received %d bytes of data.', [Length(Buffer)]));
     finally
-      Stream.Free;
-      Reader.Free;
+      //Stream.Free;
+      //Reader.Free;
     end;
     //WriteLn('Finished reading the file.');
   except
