@@ -106,6 +106,7 @@
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <DCC_MapFile>3</DCC_MapFile>
+        <Icon_MainIcon>WPPCloudAPI4DelphiDEMO_Icon.ico</Icon_MainIcon>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
@@ -161,6 +162,8 @@
                     <Source Name="MainSource">WPPCloudAPI4DelphiDEMO.dpr</Source>
                 </Source>
                 <Excluded_Packages>
+                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\20.0\Bpl\RESTDWDriverFD.bpl">File C:\Users\Public\Documents\Embarcadero\Studio\20.0\Bpl\RESTDWDriverFD.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\20.0\Bpl\RESTDWDriverRDW.bpl">File C:\Users\Public\Documents\Embarcadero\Studio\20.0\Bpl\RESTDWDriverRDW.bpl not found</Excluded_Packages>
                     <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\20.0\Bpl\TInjectCollection.bpl">File C:\Users\Public\Documents\Embarcadero\Studio\20.0\Bpl\TInjectCollection.bpl not found</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dclofficexp260.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
                     <Excluded_Packages Name="C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_Comum.bpl">File C:\ACBr_Atualizado\Lib\Delphi\LibD26\Win32\DCLACBr_Comum.bpl not found</Excluded_Packages>
