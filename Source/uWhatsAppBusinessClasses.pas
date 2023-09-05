@@ -102,7 +102,44 @@ public
   property ID: string read FID write FID;
 end;
 
+TButton_replyClass = class
+private
+  FId: String;
+  FTitle: String;
+public
+  property id: String read FId write FId;
+  property title: String read FTitle write FTitle;
+  //function ToJsonString: string;
+  //class function FromJsonString(AJsonString: string): TButton_replyClass;
+end;
 
+TList_replyClass = class
+private
+  FDescription: String;
+  FId: String;
+  FTitle: String;
+public
+  property description: String read FDescription write FDescription;
+  property id: String read FId write FId;
+  property title: String read FTitle write FTitle;
+  //function ToJsonString: string;
+  //class function FromJsonString(AJsonString: string): TList_replyClass;
+end;
+
+TInteractiveClass = class
+private
+  FButton_reply: TButton_replyClass;
+  FList_reply: TList_replyClass;
+  FType: String;
+public
+  property button_reply: TButton_replyClass read FButton_reply write FButton_reply;
+  property list_reply: TList_replyClass read FList_reply write FList_reply;
+  property &type: String read FType write FType;
+  //constructor Create;
+  //destructor Destroy; override;
+  //function ToJsonString: string;
+  //class function FromJsonString(AJsonString: string): TInteractiveClass;
+end;
 
 TContextClass = class
 private
@@ -111,6 +148,7 @@ private
 public
   property from: String read FFrom write FFrom;
   property id: String read FId write FId;
+
   function ToJsonString: string;
   class function FromJsonString(AJsonString: string): TContextClass;
 end;
@@ -129,6 +167,7 @@ private
   FVideo: TVideoClass;
   FDocument: TDocumentClass;
   FSticker: TStickerClass;
+  FInteractive: TInteractiveClass;
 public
   property button: TButtonClass read FButton write FButton;
   property text: TTextClass read FText write FText;
@@ -142,6 +181,7 @@ public
   property id: String read FId write FId;
   property timestamp: String read FTimestamp write FTimestamp;
   property &type: String read FType write FType;
+  property interactive: TInteractiveClass read FInteractive write FInteractive;
   constructor Create;
   destructor Destroy; override;
   function ToJsonString: string;
@@ -235,6 +275,26 @@ public
   class function FromJsonString(AJsonString: string): TResultClass;
 end;
 
+TUrlMedia = class
+private
+  FFile_size: Extended;
+  FId: String;
+  FMessaging_product: String;
+  FMime_type: String;
+  FSha256: String;
+  FUrl: String;
+public
+  property file_size: Extended read FFile_size write FFile_size;
+  property id: String read FId write FId;
+  property messaging_product: String read FMessaging_product write FMessaging_product;
+  property mime_type: String read FMime_type write FMime_type;
+  property sha256: String read FSha256 write FSha256;
+  property url: String read FUrl write FUrl;
+  function ToJsonString: string;
+  class function FromJsonString(AJsonString: string): TUrlMedia;
+end;
+
+
 implementation
 
 {TButtonClass}
@@ -247,7 +307,7 @@ end;
 
 class function TButtonClass.FromJsonString(AJsonString: string): TButtonClass;
 begin
-  result := TJson.JsonToObject<TButtonClass>(AJsonString)
+  result := TJson.JsonToObject<TButtonClass>(AJsonString);
 end;
 
 {TContextClass}
@@ -440,6 +500,18 @@ end;
 class function TResultClass.FromJsonString(AJsonString: string): TResultClass;
 begin
   result := TJson.JsonToObject<TResultClass>(AJsonString)
+end;
+
+{ TUrlMedia }
+
+class function TUrlMedia.FromJsonString(AJsonString: string): TUrlMedia;
+begin
+  result := TJson.JsonToObject<TUrlMedia>(AJsonString)
+end;
+
+function TUrlMedia.ToJsonString: string;
+begin
+  result := TJson.ObjectToJsonString(self);
 end;
 
 end.

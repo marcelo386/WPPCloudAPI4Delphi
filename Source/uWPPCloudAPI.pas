@@ -64,6 +64,8 @@ type
 
     function UploadMedia(FileName: string): string;
     function PostMediaFile(FileName, MediaType: string): string;
+    function DownloadMedia(id, MimeType: string): string;
+    function DownloadMediaURL(url, MimeType, FileName: string): string;
 
     procedure StartServer;
     procedure StopServer;
@@ -83,6 +85,9 @@ type
 procedure Register;
 
 implementation
+
+uses
+  uWhatsAppBusinessClasses;
 
 procedure Register;
 begin
@@ -104,6 +109,147 @@ begin
   vText  := StringReplace(vText, #$A       ,' \n'   , [rfReplaceAll] );
   vText  := StringReplace(vText, #$A#$A    ,' \n'   , [rfReplaceAll] );
   Result := vText;
+end;
+
+function TWPPCloudAPI.DownloadMedia(id, MimeType: string): string;
+var
+  response: string;
+  json: string;
+  //MessagePayload: uRetMensagemApiOficial.TMessagePayload;
+  UrlMediaFile: TUrlMedia;
+  UTF8Texto: UTF8String;
+begin
+  Result := '';
+  try
+    {if (length(waid) = 11) or (length(waid) = 10) then
+      waid := DDIDefault.ToString + waid;
+    }
+
+    //body := CaractersWeb(body);
+
+    (*json :=
+      '{ ' +
+      '  "messaging_product": "whatsapp", ' +
+      '  "recipient_type": "individual", ' +
+      '  "to": "' + waid + '", ' +
+      '  "type": "text", ' +
+      '  "text": {  ' + // the text object
+      '    "preview_url": ' + previewurl + ',  ' +
+      '    "body": "' + body + '"  ' +
+      '    } ' +
+      '}'; *)
+
+    UTF8Texto := UTF8Encode(json);
+
+    try
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + id + '')
+        .ContentType('application/json')
+        .TokenBearer(TokenApiOficial)
+        //.AddBody(UTF8Texto)
+        .Get
+        .Content;
+      //gravar_log(response);
+    except
+      on E: Exception do
+      begin
+        //
+        //gravar_log('ERROR ' + e.Message + SLINEBREAK);
+        Result := 'Error: ' + e.Message;
+        Exit;
+      end;
+    end;
+
+
+    try
+      if Assigned(FOnRetSendMessage) then
+        FOnRetSendMessage(Self, Response + #13#10);
+
+      UrlMediaFile := TUrlMedia.FromJsonString(response);
+      Result := UrlMediaFile.url;
+    except
+      on E: Exception do
+      begin
+        Result := 'Error: ' + e.Message;
+        Exit;
+      end;
+    end;
+
+  finally
+  end;
+
+end;
+
+function TWPPCloudAPI.DownloadMediaURL(url, MimeType, FileName: string): string;
+var
+  response: string;
+  UrlMediaFile: TUrlMedia;
+  Stream: TStream;
+  FileStream: TFileStream;
+begin
+  Result := '';
+  try
+    try
+      Stream := TStream.Create;
+
+      Stream := TRequest.New.BaseURL(url)
+        .ContentType('application/json')
+        .TokenBearer(TokenApiOficial)
+        .Get
+        .ContentStream;
+
+    except
+      on E: Exception do
+      begin
+        Result := 'Error: ' + e.Message;
+        Exit;
+      end;
+    end;
+
+
+    try
+      if Assigned(Stream) then
+      begin
+        FileStream := TFileStream.Create(FileName, fmCreate);
+        try
+          FileStream.CopyFrom(Stream, 0);
+        finally
+          FileStream.Free;
+        end;
+      end
+      else
+      begin
+        Result := 'Error: Stream is not assigned';
+      end;
+
+      Response := FileName;
+      Result := FileName;
+      if Assigned(FOnRetSendMessage) then
+        FOnRetSendMessage(Self, Response + #13#10);
+    except
+      on E: Exception do
+      begin
+        Result := 'Error: ' + e.Message;
+      end;
+    end;
+
+    try
+      {if Assigned(FOnRetSendMessage) then
+        FOnRetSendMessage(Self, Response + #13#10);
+
+      UrlMediaFile := TUrlMedia.FromJsonString(response);
+      Result := UrlMediaFile.url;}
+    except
+      on E: Exception do
+      begin
+        Result := 'Error: ' + e.Message;
+        Exit;
+      end;
+    end;
+
+  finally
+    Stream.Free;
+  end;
+
 end;
 
 function TWPPCloudAPI.MarkIsRead(waid, message_id: string): string;
