@@ -639,7 +639,37 @@ begin
             memResponse.Lines.Add('Text: ' + Result.entry[0].changes[0].value.messages[0].button.Text);
 
           if Assigned(Result.entry[0].changes[0].value.messages[0].text) then
-            memResponse.Lines.Add('Text: ' + Result.entry[0].changes[0].value.messages[0].text.body);
+            memResponse.Lines.Add('Body Text: ' + Result.entry[0].changes[0].value.messages[0].text.body);
+
+          //Response Button
+          try
+            if Assigned(Result.entry[0].changes[0].value.messages[0].interactive.button_reply) then
+            begin
+              memResponse.Lines.Add('Texto Botão: ' + Result.entry[0].changes[0].value.messages[0].interactive.button_reply.title);
+              memResponse.Lines.Add('ID Botão: ' + Result.entry[0].changes[0].value.messages[0].interactive.button_reply.id);
+            end;
+          except on E: Exception do
+          end;
+
+          //Response List
+          try
+            if Assigned(Result.entry[0].changes[0].value.messages[0].interactive.list_reply) then
+            begin
+              memResponse.Lines.Add('Description Lista: ' + Result.entry[0].changes[0].value.messages[0].interactive.list_reply.description);
+              memResponse.Lines.Add('ID Lista: ' + Result.entry[0].changes[0].value.messages[0].interactive.list_reply.id);
+              memResponse.Lines.Add('Title Lista: ' + Result.entry[0].changes[0].value.messages[0].interactive.list_reply.title);
+            end;
+          except on E: Exception do
+          end;
+
+          if Assigned(Result.entry[0].changes[0].value.messages[0].image) then
+          begin
+            memResponse.Lines.Add('Image id: ' + Result.entry[0].changes[0].value.messages[0].image.id);
+            memResponse.Lines.Add('Image MimeType: ' + Result.entry[0].changes[0].value.messages[0].image.MimeType);
+
+            sResponse := WPPCloudAPI1.DownloadMedia(Result.entry[0].changes[0].value.messages[0].image.id, Result.entry[0].changes[0].value.messages[0].image.MimeType);
+            memResponse.Lines.Add('url: ' + sResponse);
+          end;
 
           if Assigned(Result.entry[0].changes[0].value.messages[0].context) then
           begin
@@ -653,6 +683,7 @@ begin
 
   except on E: Exception do
   end;
+
 
 end;
 
