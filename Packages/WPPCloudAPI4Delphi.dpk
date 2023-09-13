@@ -43,6 +43,7 @@ requires
 
 contains
   uRetMensagemApiOficial in '..\Source\uRetMensagemApiOficial.pas',
-  uWPPCloudAPI in '..\Source\uWPPCloudAPI.pas' {/Web.WebBroker;};
+  uWPPCloudAPI in '..\Source\uWPPCloudAPI.pas' {/Web.WebBroker;},
+  uTWPPCloudAPI.Emoticons in '..\Source\uTWPPCloudAPI.Emoticons.pas';
 
 end.

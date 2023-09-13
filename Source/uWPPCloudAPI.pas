@@ -21,7 +21,7 @@ interface
 uses
   System.SysUtils, System.Classes, System.JSON, System.Net.HttpClient, System.Net.URLClient, IdSSLOpenSSL, IdHTTP,
   uRetMensagemApiOficial, StrUtils, Horse, Horse.Commons,  Horse.Core, web.WebBroker,
-  RESTRequest4D, REST.Types, REST.Client, System.Net.Mime;
+  RESTRequest4D, REST.Types, REST.Client, System.Net.Mime, uTWPPCloudAPI.Emoticons;
 
 
 type
@@ -38,6 +38,7 @@ type
     FOnResponse: TResponseEvent;
     FPHONE_NUMBER_ID: string;
     FPort: Integer;
+    FEmoticons: TWPPCloudAPIEmoticons;
     function CaractersWeb(vText: string): string;
   protected
 
@@ -45,7 +46,7 @@ type
   public
     //Individual
     function SendText(waid, body: string; previewurl: string = 'false'): string;
-    function SendFile(waid, body, typeFile, url: string): string;
+    function SendFile(waid, body, typeFile, url: string; const filename: string = ''): string;
     function SendButton(waid, body, actions, header, footer: string): string;
     function SendListMenu(waid, body, sections, header, footer, Button_Text: string): string;
     function SendContact(waid, phoneNumber, formatted_name, options: string): string;
@@ -66,17 +67,19 @@ type
     function PostMediaFile(FileName, MediaType: string): string;
     function DownloadMedia(id, MimeType: string): string;
     function DownloadMediaURL(url, MimeType, FileName: string): string;
+    function GetContentTypeFromExtension(const AFileExtension: string): string;
 
     procedure StartServer;
     procedure StopServer;
 
   published
-    property TokenApiOficial  : string             read FTokenApiOficial   write FTokenApiOficial;
-    property PHONE_NUMBER_ID  : string             read FPHONE_NUMBER_ID   write FPHONE_NUMBER_ID;
-    property DDIDefault       : Integer            read FDDIDefault        write FDDIDefault         Default 55;
-    property Port             : Integer            read FPort              write FPort               Default 8020;
-    property OnRetSendMessage : TOnRetSendMessage  read FOnRetSendMessage  write FOnRetSendMessage;
-    property OnResponse       : TResponseEvent     read FOnResponse        write FOnResponse;
+    property TokenApiOficial  : string                 read FTokenApiOficial   write FTokenApiOficial;
+    property PHONE_NUMBER_ID  : string                 read FPHONE_NUMBER_ID   write FPHONE_NUMBER_ID;
+    property DDIDefault       : Integer                read FDDIDefault        write FDDIDefault         Default 55;
+    property Port             : Integer                read FPort              write FPort               Default 8020;
+    property OnRetSendMessage : TOnRetSendMessage      read FOnRetSendMessage  write FOnRetSendMessage;
+    property OnResponse       : TResponseEvent         read FOnResponse        write FOnResponse;
+    Property Emoticons        : TWPPCloudAPIEmoticons  read FEmoticons         Write FEmoticons;
 
   end;
 
@@ -185,6 +188,8 @@ var
   UrlMediaFile: TUrlMedia;
   Stream: TStream;
   FileStream: TFileStream;
+  Buffer: array[0..8191] of Byte; // Buffer para ler/gravar dados
+  BytesRead: Integer;
 begin
   Result := '';
   try
@@ -192,26 +197,32 @@ begin
       Stream := TStream.Create;
 
       Stream := TRequest.New.BaseURL(url)
-        .ContentType('application/json')
+        //.ContentType('application/json')
+        .ContentType(MimeType)
+        //.AcceptEncoding('UTF8')
         .TokenBearer(TokenApiOficial)
         .Get
         .ContentStream;
-
     except
       on E: Exception do
       begin
         Result := 'Error: ' + e.Message;
-        Exit;
+        //Exit;
       end;
     end;
-
 
     try
       if Assigned(Stream) then
       begin
         FileStream := TFileStream.Create(FileName, fmCreate);
         try
-          FileStream.CopyFrom(Stream, 0);
+          Stream.Position := 0; // Certifique-se de que a posição do stream está no início
+
+          repeat
+            BytesRead := Stream.Read(Buffer, SizeOf(Buffer));
+            if BytesRead > 0 then
+              FileStream.Write(Buffer, BytesRead);
+          until BytesRead = 0;
         finally
           FileStream.Free;
         end;
@@ -221,10 +232,12 @@ begin
         Result := 'Error: Stream is not assigned';
       end;
 
-      Response := FileName;
-      Result := FileName;
-      if Assigned(FOnRetSendMessage) then
-        FOnRetSendMessage(Self, Response + #13#10);
+      if Result = '' then
+      begin
+        Result := FileName;
+        if Assigned(FOnRetSendMessage) then
+          FOnRetSendMessage(Self, Result + #13#10);
+      end;
     except
       on E: Exception do
       begin
@@ -232,22 +245,13 @@ begin
       end;
     end;
 
-    try
-      {if Assigned(FOnRetSendMessage) then
-        FOnRetSendMessage(Self, Response + #13#10);
-
-      UrlMediaFile := TUrlMedia.FromJsonString(response);
-      Result := UrlMediaFile.url;}
-    except
-      on E: Exception do
-      begin
-        Result := 'Error: ' + e.Message;
-        Exit;
-      end;
-    end;
 
   finally
-    Stream.Free;
+    try
+      //FreeAndNil(Stream);
+    except
+    end;
+
   end;
 
 end;
@@ -524,7 +528,7 @@ begin
 
 end;
 
-function TWPPCloudAPI.SendFile(waid, body, typeFile, url: string): string;
+function TWPPCloudAPI.SendFile(waid, body, typeFile, url: string; const filename: string = ''): string;
 var
   response: string;
   json: string;
@@ -548,6 +552,7 @@ begin
       '    "link": "' + url + '"  ' +
       //'    ,"caption": "' + body + '"  ' +
       IfThen( Trim(body) <> '' ,' ,"caption": "' + body + '"  ', '') +
+      IfThen( Trim(body) <> '' ,' ,"filename": "' + filename + '"  ', '') +
       '    } ' +
       '}';
 
@@ -567,6 +572,8 @@ begin
         //
         //gravar_log('ERROR ' + e.Message + SLINEBREAK);
         //MemoLogApiOficial.Lines.Add(json + SLINEBREAK);
+        if Assigned(FOnRetSendMessage) then
+          FOnRetSendMessage(Self, 'Error: ' + e.Message);
         Result := 'Error: ' + e.Message;
         Exit;
       end;
@@ -1287,7 +1294,6 @@ begin
   end;
 end;
 
-
 function TWPPCloudAPI.UploadMedia(FileName: string): string;
 var
   http: TIdHTTP;
@@ -1298,105 +1304,188 @@ var
   MessagePayload: uRetMensagemApiOficial.TMessagePayload;
   UTF8Texto: UTF8String;
   Stream: TFileStream;
-  Buffer: TBytes;
+  //Buffer: TBytes;
   Reader: TStreamReader;
+  LStream: TStream;
   Str: string;
+var
+  FileStream: TFileStream;
+  MemoryStream: TMemoryStream;
+  Buffer: array[0..8191] of Byte; // Buffer para ler/gravar dados
+  BytesRead: Integer;
 begin
   try
-    //Stream := TFileStream.Create('C:\Users\megao\Desktop\Comunidade_48x48.png', fmOpenRead or fmShareDenyWrite);
-    //FileName := '\\LAPTOP-3HVUPL9K\ArquivosTesteEnviar\Carta de Cobrança2.pdf';
+    // Crie um objeto TFileStream para ler o arquivo PDF
+    FileStream := TFileStream.Create('C:\Users\megao\Desktop\Temp\ArquivosTesteEnviar\Carta_de_Cobrança2.pdf', fmOpenRead);
+
+    //FileName := 'Carta_de_Cobrança2.pdf';
     FileName := '\\localhost\ArquivosTesteEnviar\Carta_de_Cobrança2.pdf';
+
+    // Crie um objeto TMemoryStream para armazenar os dados do arquivo PDF
+    MemoryStream := TMemoryStream.Create;
+    LStream := TStream.Create;
+
     try
-      //SetLength(Buffer, Stream.Size);
-      //Stream.Read(Buffer[0], Length(Buffer));
-      //Reader := TStreamReader.Create(Stream);
-      //Str := Reader.ReadToEnd();
+      // Copie os dados do TFileStream para o TMemoryStream
+      MemoryStream.CopyFrom(FileStream, 0);
+      //LStream.CopyFrom(FileStream, 0);
+      //LStream.CopyFrom(FileStream, 0);
+      //TMemoryStream(LStream).LoadFromFile('C:\Users\megao\Desktop\Temp\ArquivosTesteEnviar\Carta_de_Cobrança2.pdf');
+      LStream := MemoryStream;
 
-      json :=
-        '  { ' +
-        '    "messaging_product": "whatsapp", ' +
-        '    "file": "' + FileName + '",' +
-        '    "type": "document/pdf" ' +
-        '  } ';
+      {LStream.Position := 0; // Certifique-se de que a posição do LStream está no início
 
-      UTF8Texto := UTF8Encode(json);
+      repeat
+        BytesRead := LStream.Read(Buffer, SizeOf(Buffer));
+        if BytesRead > 0 then
+          FileStream.Write(Buffer, BytesRead);
+      until BytesRead = 0;
+      }
 
-      (*http := TIdHTTP.Create;
-      ssl := TIdSSLIOHandlerSocketOpenSSL.Create(http);
       try
-        http.IOHandler := ssl;
-        http.Request.ContentType := 'multipart/form-data';
-        //http.Request.ContentType := 'application/json';
-        http.Request.CustomHeaders.Values['Authorization'] := 'Bearer ' + TokenApiOficial;
+        //LStream := TFileStream.Create('C:\Users\megao\Desktop\Temp\ArquivosTesteEnviar\Carta_de_Cobrança2.pdf', fmOpenRead or fmShareDenyWrite);
 
-
-        //postData := TStringStream.Create(UTF8Texto);
-
-
-        media_id := PHONE_NUMBER_ID;
-
+        //Stream := TFileStream.Create('C:\Users\megao\Desktop\Comunidade_48x48.png', fmOpenRead or fmShareDenyWrite);
+        //FileName := '\\LAPTOP-3HVUPL9K\ArquivosTesteEnviar\Carta de Cobrança2.pdf';
+        //FileName := '\\localhost\ArquivosTesteEnviar\Carta_de_Cobrança2.pdf';
         try
-          //response := http.Post('https://graph.facebook.com/v13.0/' + PHONE_NUMBER_ID + '/media', postData);
-          //response := http.Post('https://graph.facebook.com/v15.0/' + media_id + '/media', postData);
-          response := http.Post('https://graph.facebook.com/v15.0/' + media_id + '/media', UTF8Texto);
-        except
-          on E: Exception do
-          begin
-            Result := 'Error: ' + e.Message + #13#10 + FileName + #13#10;
-            Exit;
+          //SetLength(Buffer, Stream.Size);
+          //Stream.Read(Buffer[0], Length(Buffer));
+          //Reader := TStreamReader.Create(Stream);
+          //Str := Reader.ReadToEnd();
+
+          json :=
+            '  { ' +
+            '    "messaging_product": "whatsapp", ' +
+            '    "file": "' + FileName + '",' +
+            '    "type": "document/pdf" ' +
+            '  } ';
+
+          UTF8Texto := UTF8Encode(json);
+
+
+          try
+            //
+            try
+              response := TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/media')
+                //.ContentType('multipart/form-data')
+                //.ContentType('application/json')
+                .TokenBearer(TokenApiOficial)
+                .AddParam('messaging_product', 'whatsapp')
+                .AddParam('type', 'application/pdf')
+                .AddParam('file', FileName)
+                //.AddFile('file', FileName)
+                //.AddFile('stream', MemoryStream, FileName, ctAPPLICATION_PDF)
+                //.AddFile('stream', LStream)
+                //.AddBody(UTF8Texto)
+                .Post
+                .Content;
+                //.Post.Content;
+
+              //Response := Retorno.Content;
+            except
+              on E: Exception do
+              begin
+                Result := 'Error: ' + e.Message;
+                Exit;
+              end;
+            end;
+
+
+
+            if Assigned(FOnRetSendMessage) then
+              FOnRetSendMessage(Self, Response);
+            //MessagePayload := TMessagePayload.FromJSON(response);
+            //Result := MessagePayload.Messages[0].ID;
+            Result := response;
+
+          finally
+            postData.Free;
+            ssl.Free;
+            http.Free;
           end;
+          //WriteLn(Format('Received %d bytes of data.', [Length(Buffer)]));
+        finally
+          //Stream.Free;
+          //Reader.Free;
         end;
-        *)
-     try
-        //
-        try
-          Retorno := TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/media')
-            .ContentType('multipart/form-data')
-            //.ContentType('application/json')
-            .TokenBearer(TokenApiOficial)
-            .AddField('messaging_product', 'whatsapp')
-            .AddField('type', 'application/pdf')
-            .AddFile('file', FileName)
-            //.AddBody(UTF8Texto)
-            .Post;
-            //.Post.Content;
-
-          Response := Retorno.Content;
-        except
-          on E: Exception do
-          begin
-            Result := 'Error: ' + e.Message;
-            Exit;
-          end;
+        //WriteLn('Finished reading the file.');
+      except
+        on E: Exception do
+        begin
+          //WriteLn('Encountered an error while reading the file: ' + E.Message);
+          Exit;
         end;
-
-
-
-        if Assigned(FOnRetSendMessage) then
-          FOnRetSendMessage(Self, Response);
-        //MessagePayload := TMessagePayload.FromJSON(response);
-        //Result := MessagePayload.Messages[0].ID;
-        Result := response;
-
-      finally
-        postData.Free;
-        ssl.Free;
-        http.Free;
       end;
-      //WriteLn(Format('Received %d bytes of data.', [Length(Buffer)]));
+          // Agora você tem o arquivo PDF carregado no TMemoryStream
+          // Você pode fazer o que quiser com os dados, como exibi-los em um componente PDF ou manipulá-los de outras maneiras.
+
     finally
-      //Stream.Free;
-      //Reader.Free;
+      MemoryStream.Free;
+      FileStream.Free;
     end;
-    //WriteLn('Finished reading the file.');
   except
     on E: Exception do
-    begin
-      //WriteLn('Encountered an error while reading the file: ' + E.Message);
-      Exit;
-    end;
+      //ShowMessage('Ocorreu um erro: ' + E.Message);
+      exit;
   end;
 
 end;
+
+function TWPPCloudAPI.GetContentTypeFromExtension(const AFileExtension: string): string;
+var
+  ContentTypeList: TStringList;
+begin
+  ContentTypeList := TStringList.Create;
+  try
+    // Mapeamento de tipos de conteúdo para extensões invertidas
+    ContentTypeList.Values['text/html'] := '.html';
+    ContentTypeList.Values['text/plain'] := '.txt';
+    ContentTypeList.Values['text/csv'] := '.csv';
+    ContentTypeList.Values['image/jpeg'] := '.jpg';
+    ContentTypeList.Values['image/png'] := '.png';
+    ContentTypeList.Values['image/gif'] := '.gif';
+    ContentTypeList.Values['image/bmp'] := '.bmp';
+    ContentTypeList.Values['image/x-icon'] := '.ico';
+    ContentTypeList.Values['image/svg+xml'] := '.svg';
+    ContentTypeList.Values['application/pdf'] := '.pdf';
+    ContentTypeList.Values['application/msword'] := '.doc';
+    ContentTypeList.Values['application/vnd.openxmlformats-officedocument.wordprocessingml.document'] := '.docx';
+    ContentTypeList.Values['application/vnd.ms-excel'] := '.xls';
+    ContentTypeList.Values['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'] := '.xlsx';
+    ContentTypeList.Values['application/vnd.ms-powerpoint'] := '.ppt';
+    ContentTypeList.Values['application/vnd.openxmlformats-officedocument.presentationml.presentation'] := '.pptx';
+    ContentTypeList.Values['application/zip'] := '.zip';
+    ContentTypeList.Values['application/x-rar-compressed'] := '.rar';
+    ContentTypeList.Values['application/x-tar'] := '.tar';
+    ContentTypeList.Values['application/x-7z-compressed'] := '.7z';
+    ContentTypeList.Values['audio/mpeg'] := '.mp3';
+    ContentTypeList.Values['audio/wav'] := '.wav';
+    ContentTypeList.Values['audio/ogg; codecs=opus'] := '.ogg';
+    ContentTypeList.Values['video/mp4'] := '.mp4';
+    ContentTypeList.Values['video/x-msvideo'] := '.avi';
+    ContentTypeList.Values['video/x-matroska'] := '.mkv';
+    ContentTypeList.Values['text/xml'] := '.xml';
+    ContentTypeList.Values['application/json'] := '.json';
+    ContentTypeList.Values['audio/ogg'] := '.ogg';
+    ContentTypeList.Values['video/webm'] := '.webm';
+    ContentTypeList.Values['video/x-flv'] := '.flv';
+    ContentTypeList.Values['video/x-ms-wmv'] := '.wmv';
+    ContentTypeList.Values['audio/aac'] := '.aac';
+    ContentTypeList.Values['audio/flac'] := '.flac';
+    ContentTypeList.Values['text/css'] := '.css';
+    ContentTypeList.Values['application/javascript'] := '.js';
+    ContentTypeList.Values['font/ttf'] := '.ttf';
+    ContentTypeList.Values['font/otf'] := '.otf';
+    ContentTypeList.Values['font/woff'] := '.woff';
+    ContentTypeList.Values['font/woff2'] := '.woff2';
+    // Adicione mais tipos de conteúdo e extensões conforme necessário
+
+    Result := ContentTypeList.Values[AFileExtension];
+  finally
+    ContentTypeList.Free;
+  end;
+end;
+
 
 end.

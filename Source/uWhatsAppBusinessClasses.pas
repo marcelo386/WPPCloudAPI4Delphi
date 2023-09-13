@@ -43,12 +43,12 @@ end;
 
 TStickerClass = class
 private
-  FMimeType: string;
+  Fmime_type: string;
   FSha256: string;
   FId: string;
   FAnimated: Boolean;
 public
-  property MimeType: string read FMimeType write FMimeType;
+  property mime_type: string read Fmime_type write Fmime_type;
   property Sha256: string read FSha256 write FSha256;
   property Id: string read FId write FId;
   property Animated: Boolean read FAnimated write FAnimated;
@@ -56,12 +56,12 @@ end;
 
 TAudioClass = class
 private
-  FMimeType: string;
+  Fmime_type: string;
   FSHA256: string;
   FId: string;
   FVoice: Boolean;
 public
-  property MimeType: string read FMimeType write FMimeType;
+  property mime_type: string read Fmime_type write Fmime_type;
   property SHA256: string read FSHA256 write FSHA256;
   property Id: string read FId write FId;
   property Voice: Boolean read FVoice write FVoice;
@@ -69,11 +69,11 @@ end;
 
 TImageClass = class
 private
-  FMimeType: string;
+  Fmime_type: string;
   FSHA256: string;
   FId: string;
 public
-  property MimeType: string read FMimeType write FMimeType;
+  property mime_type: string read Fmime_type write Fmime_type;
   property SHA256: string read FSHA256 write FSHA256;
   property Id: string read FId write FId;
 end;
@@ -81,23 +81,23 @@ end;
 TDocumentClass = class
 private
   FFileName: string;
-  FMimeType: string;
+  Fmime_type: string;
   FSHA256: string;
   FID: string;
 public
   property FileName: string read FFileName write FFileName;
-  property MimeType: string read FMimeType write FMimeType;
+  property mime_type: string read Fmime_type write Fmime_type;
   property SHA256: string read FSHA256 write FSHA256;
   property ID: string read FID write FID;
 end;
 
 TVideoClass = class
 private
-  FMimeType: string;
+  Fmime_type: string;
   FSHA256: string;
   FID: string;
 public
-  property MimeType: string read FMimeType write FMimeType;
+  property mime_type: string read Fmime_type write Fmime_type;
   property SHA256: string read FSHA256 write FSHA256;
   property ID: string read FID write FID;
 end;
@@ -591,12 +591,12 @@ end.
 
   TWhatsAppSticker = class
   private
-    FMimeType: string;
+    Fmime_type: string;
     FSha256: string;
     FId: string;
     FAnimated: Boolean;
   public
-    property MimeType: string read FMimeType write FMimeType;
+    property mime_type: string read Fmime_type write Fmime_type;
     property Sha256: string read FSha256 write FSha256;
     property Id: string read FId write FId;
     property Animated: Boolean read FAnimated write FAnimated;
@@ -604,12 +604,12 @@ end.
 
   TWhatsAppAudio = class
   private
-    FMimeType: string;
+    Fmime_type: string;
     FSHA256: string;
     FId: string;
     FVoice: Boolean;
   public
-    property MimeType: string read FMimeType write FMimeType;
+    property mime_type: string read Fmime_type write Fmime_type;
     property SHA256: string read FSHA256 write FSHA256;
     property Id: string read FId write FId;
     property Voice: Boolean read FVoice write FVoice;
@@ -617,11 +617,11 @@ end.
 
   TWhatsAppImage = class
   private
-    FMimeType: string;
+    Fmime_type: string;
     FSHA256: string;
     FId: string;
   public
-    property MimeType: string read FMimeType write FMimeType;
+    property mime_type: string read Fmime_type write Fmime_type;
     property SHA256: string read FSHA256 write FSHA256;
     property Id: string read FId write FId;
   end;
@@ -629,23 +629,23 @@ end.
   TWhatsAppDocument = class
   private
     FFileName: string;
-    FMimeType: string;
+    Fmime_type: string;
     FSHA256: string;
     FID: string;
   public
     property FileName: string read FFileName write FFileName;
-    property MimeType: string read FMimeType write FMimeType;
+    property mime_type: string read Fmime_type write Fmime_type;
     property SHA256: string read FSHA256 write FSHA256;
     property ID: string read FID write FID;
   end;
 
   TWhatsAppVideo = class
   private
-    FMimeType: string;
+    Fmime_type: string;
     FSHA256: string;
     FID: string;
   public
-    property MimeType: string read FMimeType write FMimeType;
+    property mime_type: string read Fmime_type write Fmime_type;
     property SHA256: string read FSHA256 write FSHA256;
     property ID: string read FID write FID;
   end;
