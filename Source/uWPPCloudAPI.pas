@@ -40,6 +40,7 @@ type
     FPort: Integer;
     FEmoticons: TWPPCloudAPIEmoticons;
     function CaractersWeb(vText: string): string;
+
   protected
 
 
@@ -67,7 +68,10 @@ type
     function PostMediaFile(FileName, MediaType: string): string;
     function DownloadMedia(id, MimeType: string): string;
     function DownloadMediaURL(url, MimeType, FileName: string): string;
-    function GetContentTypeFromExtension(const AFileExtension: string): string;
+    function GetContentTypeFromDataUri(const ADataUri: string): string;
+    function GetContentTypeFromExtension(const AContentType: string): string;
+    function GetExtensionTypeFromContentType(const AFileExtension: string): string;
+    function GetTypeFileFromContentType(const AContentType: string): string;
 
     procedure StartServer;
     procedure StopServer;
@@ -552,7 +556,7 @@ begin
       '    "link": "' + url + '"  ' +
       //'    ,"caption": "' + body + '"  ' +
       IfThen( Trim(body) <> '' ,' ,"caption": "' + body + '"  ', '') +
-      IfThen( Trim(body) <> '' ,' ,"filename": "' + filename + '"  ', '') +
+      IfThen( Trim(filename) <> '' ,' ,"filename": "' + filename + '"  ', '') +
       '    } ' +
       '}';
 
@@ -1432,13 +1436,78 @@ begin
 
 end;
 
-function TWPPCloudAPI.GetContentTypeFromExtension(const AFileExtension: string): string;
+function TWPPCloudAPI.GetContentTypeFromDataUri(const ADataUri: string): string;
+begin
+  //data:audio/mpeg;
+  if pos('data:', ADataUri) > 0 then
+    Result := Copy(ADataUri,5,pos(';', ADataUri)-1) else
+    Result := 'text/plain';
+end;
+
+function TWPPCloudAPI.GetContentTypeFromExtension(const AContentType: string): string;
 var
   ContentTypeList: TStringList;
 begin
   ContentTypeList := TStringList.Create;
   try
-    // Mapeamento de tipos de conteúdo para extensões invertidas
+    // Mapeamento de extensões para tipos de conteúdo
+    ContentTypeList.Values['.html'] := 'text/html';
+    ContentTypeList.Values['.htm'] := 'text/html';
+    ContentTypeList.Values['.txt'] := 'text/plain';
+    ContentTypeList.Values['.log'] := 'text/plain';
+    ContentTypeList.Values['.csv'] := 'text/csv';
+    ContentTypeList.Values['.jpg'] := 'image/jpeg';
+    ContentTypeList.Values['.jpeg'] := 'image/jpeg';
+    ContentTypeList.Values['.png'] := 'image/png';
+    ContentTypeList.Values['.gif'] := 'image/gif';
+    ContentTypeList.Values['.bmp'] := 'image/bmp';
+    ContentTypeList.Values['.ico'] := 'image/x-icon';
+    ContentTypeList.Values['.svg'] := 'image/svg+xml';
+    ContentTypeList.Values['.pdf'] := 'application/pdf';
+    ContentTypeList.Values['.doc'] := 'application/msword';
+    ContentTypeList.Values['.docx'] := 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    ContentTypeList.Values['.xls'] := 'application/vnd.ms-excel';
+    ContentTypeList.Values['.xlsx'] := 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    ContentTypeList.Values['.ppt'] := 'application/vnd.ms-powerpoint';
+    ContentTypeList.Values['.pptx'] := 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+    ContentTypeList.Values['.zip'] := 'application/zip';
+    ContentTypeList.Values['.rar'] := 'application/x-rar-compressed';
+    ContentTypeList.Values['.tar'] := 'application/x-tar';
+    ContentTypeList.Values['.7z'] := 'application/x-7z-compressed';
+    ContentTypeList.Values['.mp3'] := 'audio/mpeg';
+    ContentTypeList.Values['.wav'] := 'audio/wav';
+    ContentTypeList.Values['.mp4'] := 'video/mp4';
+    ContentTypeList.Values['.avi'] := 'video/x-msvideo';
+    ContentTypeList.Values['.mkv'] := 'video/x-matroska';
+    ContentTypeList.Values['.xml'] := 'text/xml';
+    ContentTypeList.Values['.json'] := 'application/json';
+    ContentTypeList.Values['.ogg'] := 'audio/ogg';
+    ContentTypeList.Values['.webm'] := 'video/webm';
+    ContentTypeList.Values['.flv'] := 'video/x-flv';
+    ContentTypeList.Values['.wmv'] := 'video/x-ms-wmv';
+    ContentTypeList.Values['.aac'] := 'audio/aac';
+    ContentTypeList.Values['.flac'] := 'audio/flac';
+    ContentTypeList.Values['.css'] := 'text/css';
+    ContentTypeList.Values['.js'] := 'application/javascript';
+    ContentTypeList.Values['.ttf'] := 'font/ttf';
+    ContentTypeList.Values['.otf'] := 'font/otf';
+    ContentTypeList.Values['.woff'] := 'font/woff';
+    ContentTypeList.Values['.woff2'] := 'font/woff2';
+    // Adicione mais extensões e tipos de conteúdo conforme necessário
+
+    Result := ContentTypeList.Values[AContentType];
+  finally
+    ContentTypeList.Free;
+  end;
+end;
+
+
+function TWPPCloudAPI.GetExtensionTypeFromContentType(const AFileExtension: string): string;
+var
+  ContentTypeList: TStringList;
+begin
+  ContentTypeList := TStringList.Create;
+  try
     ContentTypeList.Values['text/html'] := '.html';
     ContentTypeList.Values['text/plain'] := '.txt';
     ContentTypeList.Values['text/csv'] := '.csv';
@@ -1487,5 +1556,22 @@ begin
   end;
 end;
 
+
+function TWPPCloudAPI.GetTypeFileFromContentType(const AContentType: string): string;
+begin
+  if AnsiLowerCase(Copy(AContentType, 1, pos('/', AContentType)-1)) = 'image' then
+    Result := 'image'
+  else
+  if AnsiLowerCase(Copy(AContentType, 1, pos('/', AContentType)-1)) = 'audio' then
+    Result := 'audio'
+  else
+  if AnsiLowerCase(Copy(AContentType, 1, pos('/', AContentType)-1)) = 'video' then
+    Result := 'video'
+  else
+  if AnsiLowerCase(Copy(AContentType, 1, pos('/', AContentType)-1)) = 'text' then
+    Result := 'document'
+  else
+    Result := 'document';
+end;
 
 end.
