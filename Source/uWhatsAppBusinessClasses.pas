@@ -23,6 +23,17 @@ uses
 
 type
 
+TReactionClass = class
+private
+  FEmoji: String;
+  FMessage_id: String;
+public
+  property emoji: String read FEmoji write FEmoji;
+  property message_id: String read FMessage_id write FMessage_id;
+  function ToJsonString: string;
+  class function FromJsonString(AJsonString: string): TReactionClass;
+end;
+
 TButtonClass = class
 private
   FPayload: String;
@@ -109,8 +120,8 @@ private
 public
   property id: String read FId write FId;
   property title: String read FTitle write FTitle;
-  //function ToJsonString: string;
-  //class function FromJsonString(AJsonString: string): TButton_replyClass;
+  function ToJsonString: string;
+  class function FromJsonString(AJsonString: string): TButton_replyClass;
 end;
 
 TList_replyClass = class
@@ -122,8 +133,8 @@ public
   property description: String read FDescription write FDescription;
   property id: String read FId write FId;
   property title: String read FTitle write FTitle;
-  //function ToJsonString: string;
-  //class function FromJsonString(AJsonString: string): TList_replyClass;
+  function ToJsonString: string;
+  class function FromJsonString(AJsonString: string): TList_replyClass;
 end;
 
 TInteractiveClass = class
@@ -135,10 +146,10 @@ public
   property button_reply: TButton_replyClass read FButton_reply write FButton_reply;
   property list_reply: TList_replyClass read FList_reply write FList_reply;
   property &type: String read FType write FType;
-  //constructor Create;
-  //destructor Destroy; override;
-  //function ToJsonString: string;
-  //class function FromJsonString(AJsonString: string): TInteractiveClass;
+  constructor Create;
+  destructor Destroy; override;
+  function ToJsonString: string;
+  class function FromJsonString(AJsonString: string): TInteractiveClass;
 end;
 
 TContextClass = class
@@ -155,20 +166,25 @@ end;
 
 TMessagesClass = class
 private
+  FFrom: String;
+  FId: String;
+  FType: String;
+  FTimestamp: String;
   FButton: TButtonClass;
   FText: TTextClass;
   FContext: TContextClass;
-  FFrom: String;
-  FId: String;
-  FTimestamp: String;
-  FType: String;
   FImage: TImageClass;
   FAudio: TAudioClass;
   FVideo: TVideoClass;
   FDocument: TDocumentClass;
   FSticker: TStickerClass;
   FInteractive: TInteractiveClass;
+  FReaction: TReactionClass;
 public
+  property from: String read FFrom write FFrom;
+  property id: String read FId write FId;
+  property &type: String read FType write FType;
+  property timestamp: String read FTimestamp write FTimestamp;
   property button: TButtonClass read FButton write FButton;
   property text: TTextClass read FText write FText;
   property image: TImageClass read FImage write FImage;
@@ -177,11 +193,9 @@ public
   property sticker: TStickerClass read FSticker write FSticker;
   property document: TDocumentClass read FDocument write FDocument;
   property context: TContextClass read FContext write FContext;
-  property from: String read FFrom write FFrom;
-  property id: String read FId write FId;
-  property timestamp: String read FTimestamp write FTimestamp;
-  property &type: String read FType write FType;
   property interactive: TInteractiveClass read FInteractive write FInteractive;
+  property reaction: TReactionClass read FReaction write FReaction;
+
   constructor Create;
   destructor Destroy; override;
   function ToJsonString: string;
@@ -210,6 +224,62 @@ public
   class function FromJsonString(AJsonString: string): TContactsClass;
 end;
 
+TPricingClass = class
+private
+  FBillable: Boolean;
+  FCategory: String;
+  FPricing_model: String;
+public
+  property billable: Boolean read FBillable write FBillable;
+  property category: String read FCategory write FCategory;
+  property pricing_model: String read FPricing_model write FPricing_model;
+  function ToJsonString: string;
+  class function FromJsonString(AJsonString: string): TPricingClass;
+end;
+
+TOriginClass = class
+private
+  FType: String;
+public
+  property &type: String read FType write FType;
+  function ToJsonString: string;
+  class function FromJsonString(AJsonString: string): TOriginClass;
+end;
+
+TConversationClass = class
+private
+  FId: String;
+  FOrigin: TOriginClass;
+public
+  property id: String read FId write FId;
+  property origin: TOriginClass read FOrigin write FOrigin;
+  constructor Create;
+  destructor Destroy; override;
+  function ToJsonString: string;
+  class function FromJsonString(AJsonString: string): TConversationClass;
+end;
+
+TStatusesClass = class
+private
+  FConversation: TConversationClass;
+  FId: String;
+  FPricing: TPricingClass;
+  FRecipient_id: String;
+  FStatus: String;
+  FTimestamp: String;
+public
+  property conversation: TConversationClass read FConversation write FConversation;
+  property id: String read FId write FId;
+  property pricing: TPricingClass read FPricing write FPricing;
+  property recipient_id: String read FRecipient_id write FRecipient_id;
+  property status: String read FStatus write FStatus;
+  property timestamp: String read FTimestamp write FTimestamp;
+  constructor Create;
+  destructor Destroy; override;
+  function ToJsonString: string;
+  class function FromJsonString(AJsonString: string): TStatusesClass;
+end;
+
 TMetadataClass = class
 private
   FDisplay_phone_number: String;
@@ -227,11 +297,13 @@ private
   FMessages: TArray<TMessagesClass>;
   FMessaging_product: String;
   FMetadata: TMetadataClass;
+  FStatuses: TArray<TStatusesClass>;
 public
   property contacts: TArray<TContactsClass> read FContacts write FContacts;
   property messages: TArray<TMessagesClass> read FMessages write FMessages;
   property messaging_product: String read FMessaging_product write FMessaging_product;
   property metadata: TMetadataClass read FMetadata write FMetadata;
+  property statuses: TArray<TStatusesClass> read FStatuses write FStatuses;
   constructor Create;
   destructor Destroy; override;
   function ToJsonString: string;
@@ -330,12 +402,28 @@ begin
   inherited;
   FContext := TContextClass.Create();
   FButton := TButtonClass.Create();
+  FReaction := TReactionClass.Create();
+  FImage := TImageClass.Create();
+  FAudio := TAudioClass.Create();
+  FVideo := TVideoClass.Create();
+  FDocument := TDocumentClass.Create();
+  FSticker := TStickerClass.Create();
+  FInteractive := TInteractiveClass.Create();
+  FText := TtextClass.Create();
 end;
 
 destructor TMessagesClass.Destroy;
 begin
   FContext.free;
   FButton.free;
+  FReaction.free;
+  FImage.free;
+  FAudio.free;
+  FVideo.free;
+  FDocument.free;
+  FSticker.free;
+  FInteractive.free;
+  FText.free;
   inherited;
 end;
 
@@ -411,14 +499,20 @@ destructor TValueClass.Destroy;
 var
   LcontactsItem: TContactsClass;
   LmessagesItem: TMessagesClass;
+  LstatusesItem: TStatusesClass;
 begin
+  for LcontactsItem in FContacts do
+    LcontactsItem.free;
 
- for LcontactsItem in FContacts do
-   LcontactsItem.free;
- for LmessagesItem in FMessages do
-   LmessagesItem.free;
+  for LmessagesItem in FMessages do
+    LmessagesItem.free;
+
+  for LstatusesItem in FStatuses do
+    LstatusesItem.free;
 
   FMetadata.free;
+
+
   inherited;
 end;
 
@@ -510,6 +604,139 @@ begin
 end;
 
 function TUrlMedia.ToJsonString: string;
+begin
+  result := TJson.ObjectToJsonString(self);
+end;
+
+{ TOriginClass }
+
+class function TOriginClass.FromJsonString(AJsonString: string): TOriginClass;
+begin
+  result := TJson.JsonToObject<TOriginClass>(AJsonString);
+end;
+
+function TOriginClass.ToJsonString: string;
+begin
+  result := TJson.ObjectToJsonString(self)
+end;
+
+{ TConversationClass }
+
+constructor TConversationClass.Create;
+begin
+  inherited;
+  FOrigin := TOriginClass.Create();
+end;
+
+destructor TConversationClass.Destroy;
+begin
+  FOrigin.free;
+  inherited;
+end;
+
+class function TConversationClass.FromJsonString(AJsonString: string): TConversationClass;
+begin
+  result := TJson.JsonToObject<TConversationClass>(AJsonString);
+end;
+
+function TConversationClass.ToJsonString: string;
+begin
+  result := TJson.ObjectToJsonString(self);
+end;
+
+{ TPricingClass }
+
+class function TPricingClass.FromJsonString(AJsonString: string): TPricingClass;
+begin
+  result := TJson.JsonToObject<TPricingClass>(AJsonString);
+end;
+
+function TPricingClass.ToJsonString: string;
+begin
+  result := TJson.ObjectToJsonString(self);
+end;
+
+{ TButton_replyClass }
+
+class function TButton_replyClass.FromJsonString(AJsonString: string): TButton_replyClass;
+begin
+
+end;
+
+function TButton_replyClass.ToJsonString: string;
+begin
+
+end;
+
+{ TList_replyClass }
+
+class function TList_replyClass.FromJsonString(AJsonString: string): TList_replyClass;
+begin
+
+end;
+
+function TList_replyClass.ToJsonString: string;
+begin
+
+end;
+
+{ TInteractiveClass }
+
+constructor TInteractiveClass.Create;
+begin
+
+end;
+
+destructor TInteractiveClass.Destroy;
+begin
+
+  inherited;
+end;
+
+class function TInteractiveClass.FromJsonString(AJsonString: string): TInteractiveClass;
+begin
+
+end;
+
+function TInteractiveClass.ToJsonString: string;
+begin
+
+end;
+
+{ TStatusesClass }
+
+constructor TStatusesClass.Create;
+begin
+  inherited;
+  FConversation := TConversationClass.Create();
+  FPricing := TPricingClass.Create();
+end;
+
+destructor TStatusesClass.Destroy;
+begin
+  FConversation.free;
+  FPricing.free;
+  inherited;
+end;
+
+class function TStatusesClass.FromJsonString(AJsonString: string): TStatusesClass;
+begin
+  result := TJson.JsonToObject<TStatusesClass>(AJsonString);
+end;
+
+function TStatusesClass.ToJsonString: string;
+begin
+  result := TJson.ObjectToJsonString(self);
+end;
+
+{ TReactionClass }
+
+class function TReactionClass.FromJsonString(AJsonString: string): TReactionClass;
+begin
+  result := TJson.JsonToObject<TReactionClass>(AJsonString);
+end;
+
+function TReactionClass.ToJsonString: string;
 begin
   result := TJson.ObjectToJsonString(self);
 end;

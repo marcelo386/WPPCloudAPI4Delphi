@@ -1077,6 +1077,7 @@ begin
       waid := DDIDefault.ToString + waid;
 
     json := '{ "messaging_product": "whatsapp", "to": "' + waid + '", "type": "template", "template": { "name": "hello_world", "language": { "code": "en_US" } } }';
+
     UTF8Texto := UTF8Encode(json);
 
     try
