@@ -861,7 +861,7 @@ begin
 
     try
       if Assigned(FOnRetSendMessage) then
-        FOnRetSendMessage(Self, Response);
+        FOnRetSendMessage(Self, 'EMOJI: ' + Response);
 
       MessagePayload := TMessagePayload.FromJSON(response);
       Result := MessagePayload.Messages[0].ID;
@@ -1153,7 +1153,7 @@ begin
     json := jsonTemplate;
     UTF8Texto := UTF8Encode(json);
     try
-      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/message_templates')
+      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v18.0/' + PHONE_NUMBER_ID + '/message_templates')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
