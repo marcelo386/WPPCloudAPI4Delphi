@@ -980,7 +980,7 @@ begin
     UTF8Texto := UTF8Encode(json);
 
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v18.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -1081,7 +1081,7 @@ begin
     UTF8Texto := UTF8Encode(json);
 
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v18.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)

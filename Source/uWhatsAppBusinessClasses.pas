@@ -259,6 +259,34 @@ public
   class function FromJsonString(AJsonString: string): TConversationClass;
 end;
 
+TError_dataClass = class
+private
+  FDetails: String;
+public
+  property details: String read FDetails write FDetails;
+  //function ToJsonString: string;
+  //class function FromJsonString(AJsonString: string): TError_dataClass;
+end;
+
+TErrorsClass = class
+private
+  FCode: Extended;
+  FError_data: TError_dataClass;
+  FHref: String;
+  FMessage: String;
+  FTitle: String;
+public
+  property code: Extended read FCode write FCode;
+  property error_data: TError_dataClass read FError_data write FError_data;
+  property href: String read FHref write FHref;
+  property message: String read FMessage write FMessage;
+  property title: String read FTitle write FTitle;
+  //constructor Create;
+  //destructor Destroy; override;
+  //function ToJsonString: string;
+  //class function FromJsonString(AJsonString: string): TErrorsClass;
+end;
+
 TStatusesClass = class
 private
   FConversation: TConversationClass;
@@ -267,7 +295,9 @@ private
   FRecipient_id: String;
   FStatus: String;
   FTimestamp: String;
+  FErrors: TArray<TErrorsClass>;
 public
+  property errors: TArray<TErrorsClass> read FErrors write FErrors;
   property conversation: TConversationClass read FConversation write FConversation;
   property id: String read FId write FId;
   property pricing: TPricingClass read FPricing write FPricing;
