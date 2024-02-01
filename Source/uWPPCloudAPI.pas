@@ -1133,6 +1133,7 @@ begin
   if Port = 0 then
     Port := 8020;
 
+  THorse.MaxConnections := 500;
   THorse.Port := Port;
   THorse.Listen;
 end;
