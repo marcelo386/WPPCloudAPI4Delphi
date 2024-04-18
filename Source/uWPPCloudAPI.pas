@@ -28,14 +28,20 @@ type
   {Events}
   TOnRetSendMessage = Procedure(Sender : TObject; Response: string) of object;
   TResponseEvent = Procedure(Sender : TObject; Response: string) of object;
+  TResponseInstagramEvent = Procedure(Sender : TObject; Response: string) of object;
+  TResponseMessengerEvent = Procedure(Sender : TObject; Response: string) of object;
 
   TWPPCloudAPI = class(TComponent)
 
   private
     FDDIDefault: Integer;
     FTokenApiOficial: string;
+    FTokenApiInstagram: string;
+    FTokenApiMessenger: string;
     FOnRetSendMessage: TOnRetSendMessage;
     FOnResponse: TResponseEvent;
+    FOnResponseInstagram: TResponseInstagramEvent;
+    FOnResponseMessenger: TResponseMessengerEvent;
     FPHONE_NUMBER_ID: string;
     FPort: Integer;
     FEmoticons: TWPPCloudAPIEmoticons;
@@ -59,7 +65,6 @@ type
     //Template
     function Send_Template_hello_world(waid: string): string;
     function Send_Template(jsonTemplate: string): string;
-
     function TemplateGet(): string;
     function TemplateCreate(jsonTemplate: string): string;
     function TemplateDelete(AName: string): string;
@@ -73,17 +78,24 @@ type
     function GetExtensionTypeFromContentType(const AFileExtension: string): string;
     function GetTypeFileFromContentType(const AContentType: string): string;
 
+    //Instagram
+    function SendTextInstagram(recipient, text: string): string;
+
     procedure StartServer;
     procedure StopServer;
 
   published
-    property TokenApiOficial  : string                 read FTokenApiOficial   write FTokenApiOficial;
-    property PHONE_NUMBER_ID  : string                 read FPHONE_NUMBER_ID   write FPHONE_NUMBER_ID;
-    property DDIDefault       : Integer                read FDDIDefault        write FDDIDefault         Default 55;
-    property Port             : Integer                read FPort              write FPort               Default 8020;
-    property OnRetSendMessage : TOnRetSendMessage      read FOnRetSendMessage  write FOnRetSendMessage;
-    property OnResponse       : TResponseEvent         read FOnResponse        write FOnResponse;
-    Property Emoticons        : TWPPCloudAPIEmoticons  read FEmoticons         Write FEmoticons;
+    property TokenApiOficial       : string                    read FTokenApiOficial       write FTokenApiOficial;
+    property TokenApiInstagram     : string                    read FTokenApiInstagram     write FTokenApiInstagram;
+    property TokenApiMessenger     : string                    read FTokenApiMessenger     write FTokenApiMessenger;
+    property PHONE_NUMBER_ID       : string                    read FPHONE_NUMBER_ID       write FPHONE_NUMBER_ID;
+    property DDIDefault            : Integer                   read FDDIDefault            write FDDIDefault         Default 55;
+    property Port                  : Integer                   read FPort                  write FPort               Default 8020;
+    property OnRetSendMessage      : TOnRetSendMessage         read FOnRetSendMessage      write FOnRetSendMessage;
+    property OnResponse            : TResponseEvent            read FOnResponse            write FOnResponse;
+    property OnResponseInstagram   : TResponseInstagramEvent   read FOnResponseInstagram   write FOnResponseInstagram;
+    property OnResponseMessenger   : TResponseMessengerEvent   read FOnResponseMessenger   write FOnResponseMessenger;
+    Property Emoticons             : TWPPCloudAPIEmoticons     read FEmoticons             write FEmoticons;
 
   end;
 
@@ -1022,6 +1034,106 @@ begin
 
 end;
 
+function TWPPCloudAPI.SendTextInstagram(recipient, text: string): string;
+var
+  response: string;
+  json: string;
+  //MessagePayload: uRetMensagemApiOficial.TMessagePayload;
+  UTF8Texto: UTF8String;
+(*var
+  HTTP: TIdHTTP;
+  //Response: string;
+  DataStream: TStringStream;
+begin
+  HTTP := TIdHTTP.Create(nil);
+  DataStream := TStringStream.Create(
+    'recipient={"id":"' + recipient + '"}&message={"text":"' + TokenApiInstagram + '"}');
+
+  try
+    try
+      HTTP.Request.ContentType := 'application/x-www-form-urlencoded';
+      Response := HTTP.Post(
+        'https://graph.facebook.com/v18.0/me/messages?access_token=' + TokenApiInstagram,
+        DataStream
+        //'recipient={"id":"' + recipient + '"}&message={"text":"' + Text + '"}'
+      );
+      // Aqui você pode lidar com a resposta se necessário
+      //Writeln(Response);
+      Result := Response;
+
+    except on E: Exception do
+      Result := e.Message;
+    end;
+  finally
+    HTTP.Free;
+    DataStream.Free;
+  end;
+  *)
+begin
+  Result := '';
+  try
+    {if (length(waid) = 11) or (length(waid) = 10) then
+      waid := DDIDefault.ToString + waid;}
+
+    text := CaractersWeb(text);
+
+    json :=
+      '{ ' +
+      '    "recipient": {"id": "' + recipient + '"} ' +
+      '    "message": {"text": "' + text + '"}  ' +
+      '} ';
+
+    UTF8Texto := UTF8Encode(json);
+
+    try
+      //'https://graph.facebook.com/LATEST-API-VERSION/me/messages?access_token=' + AccessToken,
+      //'recipient={"id":"' + IGSID + '"}&message={"text":"' + TextOrLink + '"}'
+      response := TRequest.New.BaseURL('https://graph.facebook.com/v18.0/me/messages?access_token=' + TokenApiInstagram )
+        //.ContentType('application/json')
+        .ContentType('application/x-www-form-urlencoded')
+        //.TokenBearer(TokenApiInstagram)
+        .AddParam('id', recipient)
+        .AddParam('text', text)
+        //.AddBody(UTF8Texto)
+        .Post
+        .Content;
+      //gravar_log(response);
+    except
+      on E: Exception do
+      begin
+        //gravar_log('ERROR ' + e.Message + SLINEBREAK);
+        Result := 'Error: ' + e.Message;
+        Exit;
+      end;
+    end;
+
+    try
+      {if Assigned(FOnRetSendMessage) then
+        FOnRetSendMessage(Self, Response);
+
+      MessagePayload := TMessagePayload.FromJSON(response);
+      Result := MessagePayload.Messages[0].ID;}
+
+      Result := Response;
+    except
+      on E: Exception do
+      begin
+        Result := 'Error: ' + e.Message;
+        Exit;
+      end;
+    end;
+
+    //MemoLogApiOficial.Lines.Add(response);
+    //MemoLogApiOficial.Lines.Add('');
+    //MemoLogApiOficial.Lines.Add('Unique id: ' + MessagePayload.Messages[0].ID);
+    //gravar_log('Unique id: ' + MessagePayload.Messages[0].ID);
+  finally
+
+  end;
+
+
+end;
+
 function TWPPCloudAPI.Send_Template(jsonTemplate: string): string;
 var
   response, json: string;
@@ -1127,6 +1239,36 @@ begin
         Response := Req.Body;
         if Assigned(FOnResponse) then
           FOnResponse(Self, Response);
+      end
+    );
+
+  THorse
+    .Post('/responseinstagram',
+      procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
+      var
+        Response: string;
+      begin
+        Response := 'save response webhook instagram ok';
+        Res.Send(Response);
+
+        Response := Req.Body;
+        if Assigned(FOnResponseInstagram) then
+          FOnResponseInstagram(Self, Response);
+      end
+    );
+
+  THorse
+    .Post('/responsemessenger',
+      procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
+      var
+        Response: string;
+      begin
+        Response := 'save response webhook messenger ok';
+        Res.Send(Response);
+
+        Response := Req.Body;
+        if Assigned(FOnResponseMessenger) then
+          FOnResponseMessenger(Self, Response);
       end
     );
 
