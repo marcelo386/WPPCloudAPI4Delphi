@@ -161,7 +161,7 @@ begin
     UTF8Texto := UTF8Encode(json);
 
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + id + '')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + id + '')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         //.AddBody(UTF8Texto)
@@ -294,7 +294,7 @@ begin
     UTF8Texto := UTF8Encode(json);
 
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -386,7 +386,7 @@ begin
     UTF8Texto := UTF8Encode(json);
 
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -505,7 +505,7 @@ begin
     UTF8Texto := UTF8Encode(json);
     try
 
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -574,7 +574,7 @@ begin
 
     UTF8Texto := UTF8Encode(json);
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -704,7 +704,7 @@ begin
 
     try
 
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -790,7 +790,7 @@ begin
 
     try
 
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -854,7 +854,7 @@ begin
 
     UTF8Texto := UTF8Encode(json);
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -925,7 +925,7 @@ begin
     UTF8Texto := UTF8Encode(json);
 
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -992,7 +992,7 @@ begin
     UTF8Texto := UTF8Encode(json);
 
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v18.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -1053,7 +1053,7 @@ begin
     try
       HTTP.Request.ContentType := 'application/x-www-form-urlencoded';
       Response := HTTP.Post(
-        'https://graph.facebook.com/v18.0/me/messages?access_token=' + TokenApiInstagram,
+        'https://graph.facebook.com/v19.0/me/messages?access_token=' + TokenApiInstagram,
         DataStream
         //'recipient={"id":"' + recipient + '"}&message={"text":"' + Text + '"}'
       );
@@ -1088,7 +1088,7 @@ begin
     try
       //'https://graph.facebook.com/LATEST-API-VERSION/me/messages?access_token=' + AccessToken,
       //'recipient={"id":"' + IGSID + '"}&message={"text":"' + TextOrLink + '"}'
-      response := TRequest.New.BaseURL('https://graph.facebook.com/v18.0/me/messages?access_token=' + TokenApiInstagram )
+      response := TRequest.New.BaseURL('https://graph.facebook.com/v19.0/me/messages?access_token=' + TokenApiInstagram )
         //.ContentType('application/json')
         .ContentType('application/x-www-form-urlencoded')
         //.TokenBearer(TokenApiInstagram)
@@ -1146,7 +1146,7 @@ begin
     UTF8Texto := UTF8Encode(json);
 
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -1193,7 +1193,7 @@ begin
     UTF8Texto := UTF8Encode(json);
 
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v18.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -1296,7 +1296,7 @@ begin
     json := jsonTemplate;
     UTF8Texto := UTF8Encode(json);
     try
-      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v18.0/' + PHONE_NUMBER_ID + '/message_templates')
+      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/message_templates')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -1325,7 +1325,7 @@ var
 begin
   try
     try
-      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/message_templates')
+      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/message_templates')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody('{"name":"'+AName+'"}')
@@ -1354,7 +1354,7 @@ begin
   try
 
     try
-      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/message_templates')
+      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/message_templates')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .Get;
@@ -1397,7 +1397,7 @@ begin
   MessagingProduct := 'whatsapp';
 
   // Criando o objeto TRESTClient e configurando as propriedades básicas
-  RESTClient := TRESTClient.Create('https://graph.facebook.com/v15.0/');
+  RESTClient := TRESTClient.Create('https://graph.facebook.com/v19.0/');
   RESTClient.Accept := 'application/json';
   RESTClient.ContentType := 'multipart/form-data';
   RESTClient.Params.AddItem('access_token', AccessToken, pkGETorPOST);
@@ -1515,7 +1515,7 @@ begin
           try
             //
             try
-              response := TRequest.New.BaseURL('https://graph.facebook.com/v15.0/' + PHONE_NUMBER_ID + '/media')
+              response := TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/media')
                 //.ContentType('multipart/form-data')
                 //.ContentType('application/json')
                 .TokenBearer(TokenApiOficial)
