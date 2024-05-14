@@ -307,7 +307,11 @@ begin
       on E: Exception do
       begin
         //gravar_log('ERROR ' + e.Message + SLINEBREAK);
-        Result := 'Error: ' + e.Message + SLineBreak + json + SLineBreak;
+        //Result := 'Error: ' + e.Message + SLineBreak + json + SLineBreak;
+        if Assigned(FOnRetSendMessage) then
+          FOnRetSendMessage(Self, Response + 'Error: ' + e.Message);
+
+        Result := 'Failed';
         Exit;
       end;
     end;
@@ -397,9 +401,10 @@ begin
     except
       on E: Exception do
       begin
-        //
-        //gravar_log('ERROR ' + e.Message + SLINEBREAK);
-        Result := 'Error';
+        if Assigned(FOnRetSendMessage) then
+          FOnRetSendMessage(Self, Response + 'Error: ' + e.Message);
+
+        Result := 'Failed';
         Exit;
       end;
     end;
@@ -408,12 +413,23 @@ begin
       if Assigned(FOnRetSendMessage) then
         FOnRetSendMessage(Self, Response);
 
+      //Number Invalid
+      if pos('MESSAGE UNDELIVERABLE', AnsiUpperCase(Response)) > 0 then
+      begin
+        Result := 'MESSAGE UNDELIVERABLE';
+        Exit;
+      end;
+
+    except
+    end;
+
+    try
       MessagePayload := TMessagePayload.FromJSON(response);
       Result := MessagePayload.Messages[0].ID;
     except
       on E: Exception do
       begin
-        Result := 'Error: ' + e.Message;
+        Result := 'Failed';
         Exit;
       end;
     end;
@@ -517,10 +533,10 @@ begin
     except
       on E: Exception do
       begin
-        //gravar_log('ERROR ' + e.Message + SLINEBREAK);
-        //MemoLogApiOficial.Lines.Add(json + SLINEBREAK);
-        Result := 'Error ' + e.Message + SLINEBREAK;
-        //MemoLogApiOficial.Lines.Add(response);
+        if Assigned(FOnRetSendMessage) then
+          FOnRetSendMessage(Self, Response + 'Error: ' + e.Message);
+
+        Result := 'Failed';
         Exit;
       end;
     end;
@@ -529,12 +545,23 @@ begin
       if Assigned(FOnRetSendMessage) then
         FOnRetSendMessage(Self, Response);
 
+      //Number Invalid
+      if pos('MESSAGE UNDELIVERABLE', AnsiUpperCase(Response)) > 0 then
+      begin
+        Result := 'MESSAGE UNDELIVERABLE';
+        Exit;
+      end;
+
+    except on E: Exception do
+    end;
+
+    try
       MessagePayload := TMessagePayload.FromJSON(response);
       Result := MessagePayload.Messages[0].ID;
     except
       on E: Exception do
       begin
-        Result := 'Error: ' + e.Message;
+        Result := 'Failed';
         Exit;
       end;
     end;
@@ -585,12 +612,10 @@ begin
     except
       on E: Exception do
       begin
-        //
-        //gravar_log('ERROR ' + e.Message + SLINEBREAK);
-        //MemoLogApiOficial.Lines.Add(json + SLINEBREAK);
         if Assigned(FOnRetSendMessage) then
-          FOnRetSendMessage(Self, 'Error: ' + e.Message);
-        Result := 'Error: ' + e.Message;
+          FOnRetSendMessage(Self, Response + 'Error: ' + e.Message);
+
+        Result := 'Failed';
         Exit;
       end;
     end;
@@ -599,12 +624,23 @@ begin
       if Assigned(FOnRetSendMessage) then
         FOnRetSendMessage(Self, Response);
 
+      //Number Invalid
+      if pos('MESSAGE UNDELIVERABLE', AnsiUpperCase(Response)) > 0 then
+      begin
+        Result := 'MESSAGE UNDELIVERABLE';
+        Exit;
+      end;
+
+    except on E: Exception do
+    end;
+
+    try
       MessagePayload := TMessagePayload.FromJSON(response);
       Result := MessagePayload.Messages[0].ID;
     except
       on E: Exception do
       begin
-        Result := 'Error: ' + e.Message;
+        Result := 'Failed';
         Exit;
       end;
     end;
@@ -715,10 +751,10 @@ begin
     except
       on E: Exception do
       begin
+        if Assigned(FOnRetSendMessage) then
+          FOnRetSendMessage(Self, Response + 'Error: ' + e.Message);
 
-        //MemoLogApiOficial.Lines.Add(json + SLINEBREAK);
-        //gravar_log('ERROR ' + e.Message + SLINEBREAK);
-        Result := 'Error';
+        Result := 'Failed';
         Exit;
       end;
     end;
@@ -727,12 +763,22 @@ begin
       if Assigned(FOnRetSendMessage) then
         FOnRetSendMessage(Self, Response);
 
+      //Number Invalid
+      if pos('MESSAGE UNDELIVERABLE', AnsiUpperCase(Response)) > 0 then
+      begin
+        Result := 'MESSAGE UNDELIVERABLE';
+        Exit;
+      end;
+    except
+    end;
+
+    try
       MessagePayload := TMessagePayload.FromJSON(response);
       Result := MessagePayload.Messages[0].ID;
     except
       on E: Exception do
       begin
-        Result := 'Error: ' + e.Message;
+        Result := 'Failed';
         Exit;
       end;
     end;
@@ -800,9 +846,11 @@ begin
     except
       on E: Exception do
       begin
-        //
-        //gravar_log('ERROR ' + e.Message + SLINEBREAK);
-        Result := 'Error: ' + e.Message + SLineBreak + json + SLineBreak;
+        //Result := 'Error: ' + e.Message + SLineBreak + json + SLineBreak;
+        if Assigned(FOnRetSendMessage) then
+          FOnRetSendMessage(Self, Response + 'Error: ' + e.Message);
+
+        Result := 'Failed';
         Exit;
       end;
     end;
@@ -864,9 +912,11 @@ begin
     except
       on E: Exception do
       begin
-        //
-        //gravar_log('ERROR ' + e.Message + SLINEBREAK);
-        Result := 'Error: ' + e.Message + SLineBreak + json + SLineBreak;
+        //Result := 'Error: ' + e.Message + SLineBreak + json + SLineBreak;
+        if Assigned(FOnRetSendMessage) then
+          FOnRetSendMessage(Self, Response + 'Error: ' + e.Message);
+
+        Result := 'Failed';
         Exit;
       end;
     end;
@@ -937,7 +987,11 @@ begin
       begin
         //
         //gravar_log('ERROR ' + e.Message + SLINEBREAK);
-        Result := 'Error: ' + e.Message;
+        //Result := 'Error: ' + e.Message;
+        if Assigned(FOnRetSendMessage) then
+          FOnRetSendMessage(Self, Response + 'Error: ' + e.Message);
+
+        Result := 'Failed';
         Exit;
       end;
     end;
@@ -1002,9 +1056,10 @@ begin
     except
       on E: Exception do
       begin
-        //
-        //gravar_log('ERROR ' + e.Message + SLINEBREAK);
-        Result := 'Error: ' + e.Message;
+        if Assigned(FOnRetSendMessage) then
+          FOnRetSendMessage(Self, Response + 'Error: ' + e.Message);
+
+        Result := 'Failed';
         Exit;
       end;
     end;
@@ -1014,12 +1069,25 @@ begin
       if Assigned(FOnRetSendMessage) then
         FOnRetSendMessage(Self, Response);
 
+      //Number Invalid
+      if pos('MESSAGE UNDELIVERABLE', AnsiUpperCase(Response)) > 0 then
+      begin
+        Result := 'MESSAGE UNDELIVERABLE';
+        Exit;
+      end;
+
+    except on E: Exception do
+    end;
+
+
+    try
       MessagePayload := TMessagePayload.FromJSON(response);
       Result := MessagePayload.Messages[0].ID;
+
     except
       on E: Exception do
       begin
-        Result := 'Error: ' + e.Message;
+        Result := 'Failed';
         Exit;
       end;
     end;
@@ -1155,7 +1223,10 @@ begin
     except
       on E: Exception do
       begin
-        Result := 'Error: ' + e.Message;
+        if Assigned(FOnRetSendMessage) then
+          FOnRetSendMessage(Self, Response + 'Error: ' + e.Message);
+
+        Result := 'Failed';
         Exit;
       end;
     end;
@@ -1164,12 +1235,23 @@ begin
       if Assigned(FOnRetSendMessage) then
         FOnRetSendMessage(Self, Response);
 
+      //Number Invalid
+      if pos('MESSAGE UNDELIVERABLE', AnsiUpperCase(Response)) > 0 then
+      begin
+        Result := 'MESSAGE UNDELIVERABLE';
+        Exit;
+      end;
+
+    except
+    end;
+
+    try
       MessagePayload := TMessagePayload.FromJSON(response);
       Result := MessagePayload.Messages[0].ID;
     except
       on E: Exception do
       begin
-        Result := 'Error: ' + e.Message;
+        Result := 'Failed';
         Exit;
       end;
     end;
@@ -1201,7 +1283,11 @@ begin
     except
       on E: Exception do
       begin
-        Result := 'Error: ' + e.Message;
+        //Result := 'Error: ' + e.Message;
+        if Assigned(FOnRetSendMessage) then
+          FOnRetSendMessage(Self, Response + 'Error: ' + e.Message);
+
+        Result := 'Failed';
         Exit;
       end;
     end;
@@ -1209,6 +1295,7 @@ begin
     try
       if Assigned(FOnRetSendMessage) then
         FOnRetSendMessage(Self, Response);
+
 
       MessagePayload := TMessagePayload.FromJSON(response);
       Result := MessagePayload.Messages[0].ID;
