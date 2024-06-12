@@ -21,7 +21,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls, System.ImageList, Vcl.ImgList, uWPPCloudAPI,
-  uWhatsAppBusinessClasses, IniFiles, System.IOUtils, Vcl.Buttons, Vcl.Imaging.pngimage;
+  uWhatsAppBusinessClasses, IniFiles, System.IOUtils, Vcl.Buttons, Vcl.Imaging.pngimage, DateUtils;
 
 type
   TfrmPrincipal = class(TForm)
@@ -102,6 +102,7 @@ type
     procedure WPPCloudAPI1RetSendMessage(Sender: TObject; Response: string);
   private
     { Private declarations }
+    function GerarGUID: string;
   public
     { Public declarations }
     sResponse: string;
@@ -578,6 +579,14 @@ begin
   WPPCloudAPI1.StartServer;
 end;
 
+function TfrmPrincipal.GerarGUID: string;
+var
+  Guid: TGUID;
+begin
+  Guid := TGUID.NewGuid;
+  Result := Guid.ToString;
+end;
+
 procedure TfrmPrincipal.LerConfiguracoes;
 var
   NomeArquivo: string;
@@ -620,33 +629,232 @@ end;
 procedure TfrmPrincipal.WPPCloudAPI1Response(Sender: TObject; Response: string);
 var
   Result: uWhatsAppBusinessClasses.TResultClass;
+  ChatId, IdMensagem, S_Type, Body, S_Caption, fromId, phone_number_id, profile_name,
+    clienturl, mediakey, MimeType, FileName, Extensao, wlo_NomeArquivo, url,
+    SelectButtonId, SelectRowId, idMensagemOrigem, description,
+    Title, Footer, quotedMsg_body, quotedMsg_caption, S_Type_origem, status, recipient_id : string;
+    sDataEnv, sDataRec, reaction_emoji, reaction_message_id, wlo_ack, wlo_status,
+    error_Message, error_Code, error_title, error_data_details : string;
+    auxData: Int64;
+  eh_arquivo : Boolean;
 begin
 
   memResponse.Lines.Add('' + Response + #13#10);
 
   try
-    Result := TResultClass.FromJsonString(Response);
+    Result := uWhatsAppBusinessClasses.TResultClass.FromJsonString(Response);
+
+    ChatId := '';
+    fromId := '';
+    phone_number_id := '';
+    profile_name := '';
+    IdMensagem := '';
+    S_Type := '';
+    Body := '';
+    S_Caption := '';
+    SelectButtonId := '';
+    SelectRowId := '';
+    description := '';
+    clienturl := '';
+    mediakey := '';
+    MimeType := '';
+    FileName := '';
+    Extensao := '';
+    wlo_NomeArquivo := '';
+    url := '';
+    idMensagemOrigem := '';
+    quotedMsg_body := '';
+    quotedMsg_caption := '';
+    S_Type_origem := '';
+    Title := '';
+    Footer := '';
+    recipient_id := '';
+    status := '';
+    auxData := 0;
+    sDataEnv := '';
+    sDataRec := '';
+    reaction_emoji := '';
+    reaction_message_id := '';
+    eh_arquivo := False;
+
+
+    //gravar_log(Response);
     memResponse.Lines.Add('id: ' + Result.entry[0].id);
+
 
     if Assigned(Result.entry[0].changes[0]) then
     begin
       if Assigned(Result.entry[0].changes[0].value) then
       begin
-        if Assigned(Result.entry[0].changes[0].value.messages[0]) then
+        fromId := Result.entry[0].changes[0].value.metadata.display_phone_number;
+        phone_number_id := Result.entry[0].changes[0].value.metadata.phone_number_id;
+        memResponse.Lines.Add('display_phone_number: ' + fromId);
+        memResponse.Lines.Add('phone_number_id: ' + phone_number_id);
+
+        if Assigned(Result.entry[0].changes[0].value.statuses) then
         begin
+          if Result.entry[0].changes[0].value.statuses[0].status <> '' then
+          begin
+            status := Result.entry[0].changes[0].value.statuses[0].status;
+            recipient_id := Result.entry[0].changes[0].value.statuses[0].recipient_id;
+            IdMensagem := Result.entry[0].changes[0].value.statuses[0].id;
+            auxData := StrToIntDef(Result.entry[0].changes[0].value.statuses[0].timestamp,0);
+            sDataEnv := FormatDateTime('DD/MM/YYYY hh:mm:ss', UnixToDateTime(auxData, False));
+            sDataRec := FormatDateTime('DD/MM/YYYY hh:mm:ss', UnixToDateTime(auxData, False));
+
+            memResponse.Lines.Add('recipient_id: ' + Result.entry[0].changes[0].value.statuses[0].recipient_id);
+            memResponse.Lines.Add('IdMensagem: ' + Result.entry[0].changes[0].value.statuses[0].id);
+            memResponse.Lines.Add('status: ' + Result.entry[0].changes[0].value.statuses[0].status + #13#10);
+            memResponse.Lines.Add('Data Hora: ' + sDataEnv);
+
+            if Assigned(Result.entry[0].changes[0].value.statuses[0].Errors ) then
+            begin
+              memResponse.Lines.Add('Message: ' + Result.entry[0].changes[0].value.statuses[0].Errors[0].Message);
+              memResponse.Lines.Add('Code: ' + FLoatToStr(Result.entry[0].changes[0].value.statuses[0].Errors[0].code) );
+              memResponse.Lines.Add('title: ' + Result.entry[0].changes[0].value.statuses[0].Errors[0].title);
+              error_Message := Result.entry[0].changes[0].value.statuses[0].Errors[0].Message;
+              error_Code := FLoatToStr(Result.entry[0].changes[0].value.statuses[0].Errors[0].code);
+              error_title := Result.entry[0].changes[0].value.statuses[0].Errors[0].title;
+
+              if Assigned(Result.entry[0].changes[0].value.statuses[0].Errors[0].error_data ) then
+              begin
+                memResponse.Lines.Add('details: ' + Result.entry[0].changes[0].value.statuses[0].Errors[0].error_data.details);
+                error_data_details := Result.entry[0].changes[0].value.statuses[0].Errors[0].error_data.details;
+              end;
+
+            end;
+
+            if status = 'failed' then
+            begin
+              memResponse.Lines.Add('Falhou o Envio recipient_id: ' + recipient_id + ' IdMensagem: ' + IdMensagem);
+              if error_data_details = 'Message Undeliverable.' then
+              begin
+                wlo_ack := '-1';
+                wlo_status := 'Número Inválido';
+              end
+              else
+              begin
+                wlo_ack := '0';
+                wlo_status := 'Não Enviado';
+              end;
+
+              //SalvarStatusMessage_Local(recipient_id, '', '', IdMensagem, wlo_ack, wlo_status);
+            end
+            else
+            begin
+              if status = 'sent' then
+              begin
+                wlo_ack := '1';
+                wlo_status := 'Enviada';
+              end;
+              if status = 'delivered' then
+              begin
+                wlo_ack := '2';
+                wlo_status := 'Recebida';
+              end;
+              if status = 'read' then
+              begin
+                wlo_ack := '3';
+                wlo_status := 'Visualizada';
+              end;
+            end;
+
+
+            {if status = 'sent' then
+              SalvarStatusMessage_Mult(recipient_id, '', '', IdMensagem, '1', 'Enviada', sDataEnv, sDataRec)
+            else
+            if status = 'delivered' then
+              SalvarStatusMessage_Mult(recipient_id, '', '', IdMensagem, '2', 'Recebida', sDataEnv, sDataRec)
+            else
+            if status = 'read' then
+              SalvarStatusMessage_Mult(recipient_id, '', '', IdMensagem, '3', 'Visualizada', sDataEnv, sDataRec);}
+
+
+            Exit;
+          end;
+        end;
+
+        if Assigned(Result.entry[0].changes[0].value.contacts) then
+        begin
+          if Result.entry[0].changes[0].value.contacts[0].wa_id <> '' then
+          begin
+            ChatId := Result.entry[0].changes[0].value.contacts[0].wa_id;
+            profile_name := Result.entry[0].changes[0].value.contacts[0].profile.name;
+            memResponse.Lines.Add('wa_id: ' + Result.entry[0].changes[0].value.contacts[0].wa_id);
+            memResponse.Lines.Add('profile.name: ' + Result.entry[0].changes[0].value.contacts[0].profile.name);
+
+          end;
+        end;
+
+        if Assigned(Result.entry[0].changes[0].value.messages) then
+        begin
+          if Assigned(Result.entry[0].changes[0].value.messages[0].reaction) then
+          begin
+            reaction_message_id := Result.entry[0].changes[0].value.messages[0].reaction.message_id;
+            reaction_emoji := Result.entry[0].changes[0].value.messages[0].reaction.emoji;
+
+            if reaction_emoji <> '' then
+            begin
+
+              memResponse.Lines.Add('reaction.emoji: ' + Result.entry[0].changes[0].value.messages[0].reaction.emoji);
+              memResponse.Lines.Add('message_id: ' + Result.entry[0].changes[0].value.messages[0].reaction.message_id);
+
+              //reaction_emoji := IntToStr(GetCodReacaoByEmoji(reaction_emoji));
+              //Add_Reaction_msg_Retorno_Mult(ChatId, reaction_emoji, reaction_message_id);
+              Exit;
+            end;
+          end;
+
+          IdMensagem := Result.entry[0].changes[0].value.messages[0].id;
+          S_Type := Result.entry[0].changes[0].value.messages[0].&type;
+
+
           memResponse.Lines.Add('Type: ' + Result.entry[0].changes[0].value.messages[0].&type);
+
           if Assigned(Result.entry[0].changes[0].value.messages[0].button) then
+          begin
             memResponse.Lines.Add('Text: ' + Result.entry[0].changes[0].value.messages[0].button.Text);
+          end;
+
 
           if Assigned(Result.entry[0].changes[0].value.messages[0].text) then
-            memResponse.Lines.Add('Body Text: ' + Result.entry[0].changes[0].value.messages[0].text.body);
+          begin
+            if Result.entry[0].changes[0].value.messages[0].text.body <> '' then
+            begin
+              memResponse.Lines.Add('Body Text: ' + Result.entry[0].changes[0].value.messages[0].text.body);
+              body := Result.entry[0].changes[0].value.messages[0].text.body;
+            end;
+          end;
+
+          //Response Button Template payload
+          try
+            if Assigned(Result.entry[0].changes[0].value.messages[0].button) then
+            begin
+              if Result.entry[0].changes[0].value.messages[0].button.text <> '' then
+              begin
+                body := Result.entry[0].changes[0].value.messages[0].button.text;
+                SelectButtonId := Result.entry[0].changes[0].value.messages[0].button.payload;
+
+                memResponse.Lines.Add('Texto Botão: ' + Result.entry[0].changes[0].value.messages[0].button.text);
+                memResponse.Lines.Add('ID Botão Payload: ' + Result.entry[0].changes[0].value.messages[0].button.payload);
+              end;
+            end;
+          except on E: Exception do
+          end;
+
 
           //Response Button
           try
             if Assigned(Result.entry[0].changes[0].value.messages[0].interactive.button_reply) then
             begin
-              memResponse.Lines.Add('Texto Botão: ' + Result.entry[0].changes[0].value.messages[0].interactive.button_reply.title);
-              memResponse.Lines.Add('ID Botão: ' + Result.entry[0].changes[0].value.messages[0].interactive.button_reply.id);
+              if Result.entry[0].changes[0].value.messages[0].interactive.button_reply.title <> '' then
+              begin
+                body := Result.entry[0].changes[0].value.messages[0].interactive.button_reply.title;
+                SelectButtonId := Result.entry[0].changes[0].value.messages[0].interactive.button_reply.id;
+
+                memResponse.Lines.Add('Texto Botão: ' + Result.entry[0].changes[0].value.messages[0].interactive.button_reply.title);
+                memResponse.Lines.Add('ID Botão: ' + Result.entry[0].changes[0].value.messages[0].interactive.button_reply.id);
+              end;
             end;
           except on E: Exception do
           end;
@@ -655,35 +863,212 @@ begin
           try
             if Assigned(Result.entry[0].changes[0].value.messages[0].interactive.list_reply) then
             begin
-              memResponse.Lines.Add('Description Lista: ' + Result.entry[0].changes[0].value.messages[0].interactive.list_reply.description);
-              memResponse.Lines.Add('ID Lista: ' + Result.entry[0].changes[0].value.messages[0].interactive.list_reply.id);
-              memResponse.Lines.Add('Title Lista: ' + Result.entry[0].changes[0].value.messages[0].interactive.list_reply.title);
+              if Result.entry[0].changes[0].value.messages[0].interactive.list_reply.title <> '' then
+              begin
+                body := Result.entry[0].changes[0].value.messages[0].interactive.list_reply.title;
+                SelectRowId := Result.entry[0].changes[0].value.messages[0].interactive.list_reply.id;
+                description := Result.entry[0].changes[0].value.messages[0].interactive.list_reply.description;
+
+                memResponse.Lines.Add('Description Lista: ' + Result.entry[0].changes[0].value.messages[0].interactive.list_reply.description);
+                memResponse.Lines.Add('ID Lista: ' + Result.entry[0].changes[0].value.messages[0].interactive.list_reply.id);
+                memResponse.Lines.Add('Title Lista: ' + Result.entry[0].changes[0].value.messages[0].interactive.list_reply.title);
+              end;
             end;
           except on E: Exception do
           end;
 
-          if Assigned(Result.entry[0].changes[0].value.messages[0].image) then
-          begin
-            memResponse.Lines.Add('Image id: ' + Result.entry[0].changes[0].value.messages[0].image.id);
-            memResponse.Lines.Add('Image MimeType: ' + Result.entry[0].changes[0].value.messages[0].image.MimeType);
-
-            sResponse := WPPCloudAPI1.DownloadMedia(Result.entry[0].changes[0].value.messages[0].image.id, Result.entry[0].changes[0].value.messages[0].image.MimeType);
-            memResponse.Lines.Add('url: ' + sResponse);
-          end;
-
+          //Msg Origem
           if Assigned(Result.entry[0].changes[0].value.messages[0].context) then
           begin
-            memResponse.Lines.Add('id mensagem Origem: ' + Result.entry[0].changes[0].value.messages[0].context.id);
-            //memResponse.Lines.Add('From mensagem Origem: ' + Result.entry[0].changes[0].value.messages[0].context.From);
+            if Result.entry[0].changes[0].value.messages[0].context.id <> '' then
+            begin
+              idMensagemOrigem := Result.entry[0].changes[0].value.messages[0].context.id;
+
+              memResponse.Lines.Add('id mensagem Origem: ' + Result.entry[0].changes[0].value.messages[0].context.id);
+              S_Type_origem := '';
+              //memResponse.Lines.Add('From mensagem Origem: ' + Result.entry[0].changes[0].value.messages[0].context.From);
+            end;
           end;
+
+          //Arquivo Imagem
+          if Assigned(Result.entry[0].changes[0].value.messages[0].image) then
+          begin
+            if Result.entry[0].changes[0].value.messages[0].image.id <> '' then
+            begin
+              eh_arquivo := True;
+              memResponse.Lines.Add('Image id: ' + Result.entry[0].changes[0].value.messages[0].image.id);
+              memResponse.Lines.Add('Image MimeType: ' + Result.entry[0].changes[0].value.messages[0].image.mime_type);
+
+
+              MimeType := Result.entry[0].changes[0].value.messages[0].image.mime_type;
+              mediakey := Result.entry[0].changes[0].value.messages[0].image.SHA256;
+              Extensao := WPPCloudAPI1.GetContentTypeFromExtension(MimeType);
+              //Extensao := StringReplace(Extensao, 'image/', '', []);
+
+              //Gerar o URL para Download
+              sResponse := WPPCloudAPI1.DownloadMedia(Result.entry[0].changes[0].value.messages[0].image.id, Result.entry[0].changes[0].value.messages[0].image.mime_type);
+              memResponse.Lines.Add('url: ' + sResponse);
+              url := sResponse;
+              clienturl := url;
+
+              wlo_NomeArquivo := '';
+              wlo_NomeArquivo := GerarGUID +  Extensao;
+              wlo_NomeArquivo := StringReplace(wlo_NomeArquivo,'{', '',[]);
+              wlo_NomeArquivo := StringReplace(wlo_NomeArquivo,'}', '',[]);
+              FileName := ExtractFilePath(ParamStr(0)) + 'Temp\' + wlo_NomeArquivo;
+
+              //Fazer o Download pelo URL
+              sResponse := WPPCloudAPI1.DownloadMediaURL(url, MimeType, FileName);
+
+              memResponse.Lines.Add(sResponse);
+            end;
+          end
+          else
+          if Assigned(Result.entry[0].changes[0].value.messages[0].audio) then
+          begin
+            if Result.entry[0].changes[0].value.messages[0].audio.id <> '' then
+            begin
+              eh_arquivo := True;
+              memResponse.Lines.Add('audio id: ' + Result.entry[0].changes[0].value.messages[0].audio.id);
+              memResponse.Lines.Add('audio MimeType: ' + Result.entry[0].changes[0].value.messages[0].audio.mime_type);
+              MimeType := Result.entry[0].changes[0].value.messages[0].audio.mime_type;
+              mediakey := Result.entry[0].changes[0].value.messages[0].audio.SHA256;
+              Extensao := WPPCloudAPI1.GetContentTypeFromExtension(MimeType);
+              //Extensao := StringReplace(Extensao, 'audio/', '', []);
+
+              //Gerar o URL para Download
+              sResponse := WPPCloudAPI1.DownloadMedia(Result.entry[0].changes[0].value.messages[0].audio.id, Result.entry[0].changes[0].value.messages[0].audio.mime_type);
+
+              memResponse.Lines.Add('url: ' + sResponse);
+              url := sResponse;
+              clienturl := url;
+
+              wlo_NomeArquivo := '';
+              wlo_NomeArquivo := GerarGUID +  Extensao;
+              wlo_NomeArquivo := StringReplace(wlo_NomeArquivo,'{', '',[]);
+              wlo_NomeArquivo := StringReplace(wlo_NomeArquivo,'}', '',[]);
+              FileName := ExtractFilePath(ParamStr(0)) + 'Temp\' + wlo_NomeArquivo;
+
+              //Fazer o Download pelo URL
+              sResponse := WPPCloudAPI1.DownloadMediaURL(url, MimeType, FileName);
+              memResponse.Lines.Add(sResponse);
+            end;
+          end
+          else
+          if Assigned(Result.entry[0].changes[0].value.messages[0].video) then
+          begin
+            if Result.entry[0].changes[0].value.messages[0].video.id <> '' then
+            begin
+              eh_arquivo := True;
+              memResponse.Lines.Add('video id: ' + Result.entry[0].changes[0].value.messages[0].video.id);
+              memResponse.Lines.Add('video MimeType: ' + Result.entry[0].changes[0].value.messages[0].video.mime_type);
+
+              MimeType := Result.entry[0].changes[0].value.messages[0].video.mime_type;
+              mediakey := Result.entry[0].changes[0].value.messages[0].video.SHA256;
+              Extensao := WPPCloudAPI1.GetContentTypeFromExtension(MimeType);
+              //Extensao := StringReplace(Extensao, 'video/', '', []);
+
+              //Gerar o URL para Download
+              sResponse := WPPCloudAPI1.DownloadMedia(Result.entry[0].changes[0].value.messages[0].video.id, Result.entry[0].changes[0].value.messages[0].video.mime_type);
+              memResponse.Lines.Add('url: ' + sResponse + #13#10);
+              url := sResponse;
+              clienturl := url;
+
+              wlo_NomeArquivo := '';
+              wlo_NomeArquivo := GerarGUID +  Extensao;
+              wlo_NomeArquivo := StringReplace(wlo_NomeArquivo,'{', '',[]);
+              wlo_NomeArquivo := StringReplace(wlo_NomeArquivo,'}', '',[]);
+              FileName := ExtractFilePath(ParamStr(0)) + 'Temp\' + wlo_NomeArquivo;
+
+              //Fazer o Download pelo URL
+              sResponse := WPPCloudAPI1.DownloadMediaURL(url, MimeType, FileName);
+              memResponse.Lines.Add(sResponse);
+            end;
+          end
+          else
+          if Assigned(Result.entry[0].changes[0].value.messages[0].document) then
+          begin
+            if Result.entry[0].changes[0].value.messages[0].document.id <> '' then
+            begin
+              eh_arquivo := True;
+              memResponse.Lines.Add('document id: ' + Result.entry[0].changes[0].value.messages[0].document.id);
+              memResponse.Lines.Add('document MimeType: ' + Result.entry[0].changes[0].value.messages[0].document.mime_type);
+
+              MimeType := Result.entry[0].changes[0].value.messages[0].document.mime_type;
+              mediakey := Result.entry[0].changes[0].value.messages[0].document.SHA256;
+              Extensao := WPPCloudAPI1.GetContentTypeFromExtension(MimeType);
+              //Extensao := StringReplace(Extensao, 'document/', '', []);
+
+              //Gerar o URL para Download
+              sResponse := WPPCloudAPI1.DownloadMedia(Result.entry[0].changes[0].value.messages[0].document.id, Result.entry[0].changes[0].value.messages[0].document.mime_type);
+
+              memResponse.Lines.Add('url: ' + sResponse);
+              url := sResponse;
+              clienturl := url;
+
+              wlo_NomeArquivo := '';
+              wlo_NomeArquivo := GerarGUID +  Extensao;
+              wlo_NomeArquivo := StringReplace(wlo_NomeArquivo,'{', '',[]);
+              wlo_NomeArquivo := StringReplace(wlo_NomeArquivo,'}', '',[]);
+              FileName := ExtractFilePath(ParamStr(0)) + 'Temp\' + wlo_NomeArquivo;
+
+              //Fazer o Download pelo URL
+              sResponse := WPPCloudAPI1.DownloadMediaURL(url, MimeType, FileName);
+              memResponse.Lines.Add(sResponse);
+            end;
+          end
+          else
+          if Assigned(Result.entry[0].changes[0].value.messages[0].sticker) then
+          begin
+            if Result.entry[0].changes[0].value.messages[0].sticker.id <> '' then
+            begin
+              eh_arquivo := True;
+
+              memResponse.Lines.Add('sticker id: ' + Result.entry[0].changes[0].value.messages[0].sticker.id);
+              memResponse.Lines.Add('sticker MimeType: ' + Result.entry[0].changes[0].value.messages[0].sticker.mime_type);
+
+              MimeType := Result.entry[0].changes[0].value.messages[0].sticker.mime_type;
+              mediakey := Result.entry[0].changes[0].value.messages[0].sticker.SHA256;
+              Extensao := WPPCloudAPI1.GetContentTypeFromExtension(MimeType);
+              //Extensao := StringReplace(Extensao, 'sticker/', '', []);
+
+              //Gerar o URL para Download
+              sResponse := WPPCloudAPI1.DownloadMedia(Result.entry[0].changes[0].value.messages[0].sticker.id, Result.entry[0].changes[0].value.messages[0].sticker.mime_type);
+
+
+              memResponse.Lines.Add('url: ' + sResponse);
+              url := sResponse;
+              clienturl := url;
+
+              wlo_NomeArquivo := '';
+              wlo_NomeArquivo := GerarGUID +  Extensao;
+              wlo_NomeArquivo := StringReplace(wlo_NomeArquivo,'{', '',[]);
+              wlo_NomeArquivo := StringReplace(wlo_NomeArquivo,'}', '',[]);
+              FileName := ExtractFilePath(ParamStr(0)) + 'Temp\' + wlo_NomeArquivo;
+
+              //Fazer o Download pelo URL
+              sResponse := WPPCloudAPI1.DownloadMediaURL(url, MimeType, FileName);
+
+
+              memResponse.Lines.Add(sResponse);
+            end;
+          end;
+
+          {ProcessaMsgNaoLida(ChatId, fromId, IdMensagem, SelectButtonId, SelectRowId, profile_name, Body, S_Caption, Title, Footer,
+            description, FileName, S_TYPE, eh_arquivo, mediakey, clienturl, mimetype, '', IdMensagemOrigem, quotedMsg_caption,
+            quotedMsg_body, S_Type_origem, 0, phone_number_id);}
+
 
         end;
       end;
     end;
 
-  except on E: Exception do
+  except
+    on E: Exception do
+    begin
+      memResponse.Lines.Add('Response Webhook' + e.Message);
+    end;
   end;
-
 
 end;
 
