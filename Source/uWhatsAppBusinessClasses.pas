@@ -328,12 +328,24 @@ private
   FMessaging_product: String;
   FMetadata: TMetadataClass;
   FStatuses: TArray<TStatusesClass>;
+  Fmessage_template_id: String;
+  Fmessage_template_language: String;
+  Fmessage_template_name: String;
+  Fnew_category: String;
+  Fprevious_category: String;
 public
   property contacts: TArray<TContactsClass> read FContacts write FContacts;
   property messages: TArray<TMessagesClass> read FMessages write FMessages;
   property messaging_product: String read FMessaging_product write FMessaging_product;
   property metadata: TMetadataClass read FMetadata write FMetadata;
   property statuses: TArray<TStatusesClass> read FStatuses write FStatuses;
+  property message_template_id: String read Fmessage_template_id write Fmessage_template_id;
+  property message_template_name: String read Fmessage_template_name write Fmessage_template_name;
+  property message_template_language: String read Fmessage_template_language write Fmessage_template_language;
+  property previous_category: String read Fprevious_category write Fprevious_category;
+  property new_category: String read Fnew_category write Fnew_category;
+  property correct_category: String read Fcorrect_category write Fcorrect_category;
+
   constructor Create;
   destructor Destroy; override;
   function ToJsonString: string;
