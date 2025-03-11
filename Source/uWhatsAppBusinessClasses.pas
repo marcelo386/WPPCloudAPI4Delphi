@@ -333,6 +333,9 @@ private
   Fmessage_template_name: String;
   Fnew_category: String;
   Fprevious_category: String;
+  Fcorrect_category: String;
+  Fevent: String;
+  Freason: String;
 public
   property contacts: TArray<TContactsClass> read FContacts write FContacts;
   property messages: TArray<TMessagesClass> read FMessages write FMessages;
@@ -345,6 +348,8 @@ public
   property previous_category: String read Fprevious_category write Fprevious_category;
   property new_category: String read Fnew_category write Fnew_category;
   property correct_category: String read Fcorrect_category write Fcorrect_category;
+  property event: String read Fevent write Fevent;
+  property reason: String read Freason write Freason;
 
   constructor Create;
   destructor Destroy; override;
