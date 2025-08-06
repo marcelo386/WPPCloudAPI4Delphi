@@ -450,12 +450,12 @@ begin
   FContext := TContextClass.Create();
   FButton := TButtonClass.Create();
   FReaction := TReactionClass.Create();
-  FImage := TImageClass.Create();
+  {FImage := TImageClass.Create();
   FAudio := TAudioClass.Create();
   FVideo := TVideoClass.Create();
   FDocument := TDocumentClass.Create();
   FSticker := TStickerClass.Create();
-  FInteractive := TInteractiveClass.Create();
+  FInteractive := TInteractiveClass.Create();}
   FText := TtextClass.Create();
 end;
 

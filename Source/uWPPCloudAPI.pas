@@ -21,7 +21,7 @@ interface
 uses
   System.SysUtils, System.Classes, System.JSON, System.Net.HttpClient, System.Net.URLClient, IdSSLOpenSSL, IdHTTP,
   uRetMensagemApiOficial, StrUtils, Horse, Horse.Commons,  Horse.Core, web.WebBroker,
-  RESTRequest4D, REST.Types, REST.Client, System.Net.Mime, uTWPPCloudAPI.Emoticons;
+  RESTRequest4D, REST.Types, REST.Client, System.Net.Mime, uTWPPCloudAPI.Emoticons, System.MaskUtils;
 
 
 type
@@ -69,6 +69,10 @@ type
     function TemplateCreate(jsonTemplate: string): string;
     function TemplateDelete(AName: string): string;
 
+    //NUMBER REGITRATION
+    function register_Number(pPhone_Number_ID: string): string;
+    function deregister_Number(pPhone_Number_ID: string): string;
+
     function UploadMedia(FileName: string): string;
     function PostMediaFile(FileName, MediaType: string): string;
     function DownloadMedia(id, MimeType: string): string;
@@ -77,6 +81,7 @@ type
     function GetContentTypeFromExtension(const AContentType: string): string;
     function GetExtensionTypeFromContentType(const AFileExtension: string): string;
     function GetTypeFileFromContentType(const AContentType: string): string;
+    function AjustNumber(PNum: string): string;
 
     //Instagram
     function SendTextInstagram(recipient, text: string): string;
@@ -118,16 +123,49 @@ end;
 
 function TWPPCloudAPI.CaractersWeb(vText: string): string;
 begin
-  vText  := StringReplace(vText, sLineBreak,' \n' , [rfReplaceAll] );
-  vText  := StringReplace(vText, '<br>'    ,' \n' , [rfReplaceAll] );
-  vText  := StringReplace(vText, '<br />'  ,' \n' , [rfReplaceAll] );
-  vText  := StringReplace(vText, '<br/>'   ,' \n' , [rfReplaceAll] );
-  vText  := StringReplace(vText, #13       ,''    , [rfReplaceAll] );
-  vText  := StringReplace(vText, '\r'      ,''    , [rfReplaceAll] );
-  vText  := StringReplace(vText, '"'       ,'\"' , [rfReplaceAll] );
-  vText  := StringReplace(vText, #$A       ,' \n'   , [rfReplaceAll] );
-  vText  := StringReplace(vText, #$A#$A    ,' \n'   , [rfReplaceAll] );
+  vText  := StringReplace(vText, sLineBreak,' \n'  , [rfReplaceAll] );
+  vText  := StringReplace(vText, '<br>'    ,' \n'  , [rfReplaceAll] );
+  vText  := StringReplace(vText, '<br />'  ,' \n'  , [rfReplaceAll] );
+  vText  := StringReplace(vText, '<br/>'   ,' \n'  , [rfReplaceAll] );
+  vText  := StringReplace(vText, #13       ,''     , [rfReplaceAll] );
+  vText  := StringReplace(vText, '\r'      ,''     , [rfReplaceAll] );
+  vText  := StringReplace(vText, '"'       ,'\"'   , [rfReplaceAll] );
+  vText  := StringReplace(vText, '/'       ,'\/'   , [rfReplaceAll] ); // opcional
+  vText  := StringReplace(vText, #8        ,'\b'   ,  [rfReplaceAll]); // backspace
+  vText  := StringReplace(vText, #12       ,'\f'   ,  [rfReplaceAll]); // form feed
+  vText  := StringReplace(vText, #9        ,'\t'   ,  [rfReplaceAll]); // tabulação
+  vText  := StringReplace(vText, #$A       ,' \n'  , [rfReplaceAll] );
+  vText  := StringReplace(vText, #$A#$A    ,' \n'  , [rfReplaceAll] );
   Result := vText;
+end;
+
+function TWPPCloudAPI.deregister_Number(pPhone_Number_ID: string): string;
+var
+  response: string;
+  //MessagePayload: uRetMensagemApiOficial.TMessagePayload;
+  UTF8Texto: UTF8String;
+  Retorno: IResponse;
+begin
+  try
+    try
+      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + pPhone_Number_ID + '/deregister')
+        .ContentType('application/json')
+        .TokenBearer(TokenApiOficial)
+        //.AddBody('{"name":"'+AName+'"}')
+        .Delete;
+      response := Retorno.Content;
+    except
+      on E: Exception do
+      begin
+        Result := 'Error: ' + e.Message;
+        Exit;
+      end;
+    end;
+
+
+    Result := response;
+  finally
+  end;
 end;
 
 function TWPPCloudAPI.DownloadMedia(id, MimeType: string): string;
@@ -1529,6 +1567,35 @@ begin
   end;
 end;
 
+function TWPPCloudAPI.register_Number(pPhone_Number_ID: string): string;
+var
+  response: string;
+  //MessagePayload: uRetMensagemApiOficial.TMessagePayload;
+  UTF8Texto: UTF8String;
+  Retorno: IResponse;
+begin
+  try
+    try
+      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + pPhone_Number_ID + '/register')
+        .ContentType('application/json')
+        .TokenBearer(TokenApiOficial)
+        //.AddBody('{"name":"'+AName+'"}')
+        .Delete;
+      response := Retorno.Content;
+    except
+      on E: Exception do
+      begin
+        Result := 'Error: ' + e.Message;
+        Exit;
+      end;
+    end;
+
+
+    Result := response;
+  finally
+  end;
+end;
+
 function TWPPCloudAPI.UploadMedia(FileName: string): string;
 var
   http: TIdHTTP;
@@ -1668,10 +1735,18 @@ begin
 end;
 
 function TWPPCloudAPI.GetContentTypeFromDataUri(const ADataUri: string): string;
+var
+  auxCopyContentType: string;
 begin
   //data:audio/mpeg;
+  //data:application/pdf;base64,
   if pos('data:', ADataUri) > 0 then
-    Result := Copy(ADataUri,5,pos(';', ADataUri)-1) else
+  begin
+    auxCopyContentType := Copy(ADataUri,6,length(ADataUri));
+    auxCopyContentType := Copy(auxCopyContentType,1,pos(';', auxCopyContentType)-1);
+    Result := auxCopyContentType;
+  end
+  else
     Result := 'text/plain';
 end;
 
@@ -1804,5 +1879,25 @@ begin
   else
     Result := 'document';
 end;
+
+function TWPPCloudAPI.AjustNumber(PNum: string): string;
+var
+  LDDi, LDDD, Lresto, LMask : String;
+  LLengthDDI, LLengthDDD : Integer;
+begin
+  LLengthDDI := 2;
+  LLengthDDD := 2;
+
+  LDDi   := Copy(PNum, 0, LLengthDDI);
+  LDDD   := Copy(PNum, LLengthDDI + 1, LLengthDDD);
+  Lresto := Copy(PNum, LLengthDDI + LLengthDDD + 1); // + 1, LengthPhone);
+
+  if Length(Lresto) <= 8 then
+    LMask := '0000\-0000;0;' else
+    LMask := '0\.0000\-0000;0;';
+
+  Result :=  '+' + LDDi + ' (' + LDDD + ') ' + FormatMaskText(LMask, Lresto );
+end;
+
 
 end.
