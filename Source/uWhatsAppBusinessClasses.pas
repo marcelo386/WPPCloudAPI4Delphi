@@ -83,10 +83,12 @@ private
   Fmime_type: string;
   FSHA256: string;
   FId: string;
+  Fcaption: string;
 public
   property mime_type: string read Fmime_type write Fmime_type;
   property SHA256: string read FSHA256 write FSHA256;
   property Id: string read FId write FId;
+  property caption: string read Fcaption write Fcaption;
 end;
 
 TDocumentClass = class
@@ -95,11 +97,13 @@ private
   Fmime_type: string;
   FSHA256: string;
   FID: string;
+  Fcaption: string;
 public
   property FileName: string read FFileName write FFileName;
   property mime_type: string read Fmime_type write Fmime_type;
   property SHA256: string read FSHA256 write FSHA256;
   property ID: string read FID write FID;
+  property caption: string read Fcaption write Fcaption;
 end;
 
 TVideoClass = class
@@ -107,10 +111,12 @@ private
   Fmime_type: string;
   FSHA256: string;
   FID: string;
+  Fcaption: string;
 public
   property mime_type: string read Fmime_type write Fmime_type;
   property SHA256: string read FSHA256 write FSHA256;
   property ID: string read FID write FID;
+  property caption: string read Fcaption write Fcaption;
 end;
 
 TButton_replyClass = class
