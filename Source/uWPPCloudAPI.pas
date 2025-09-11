@@ -148,7 +148,7 @@ var
 begin
   try
     try
-      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + pPhone_Number_ID + '/deregister')
+      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v23.0/' + pPhone_Number_ID + '/deregister')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         //.AddBody('{"name":"'+AName+'"}')
@@ -1576,11 +1576,15 @@ var
 begin
   try
     try
-      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + pPhone_Number_ID + '/register')
+      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v23.0/' + pPhone_Number_ID + '/register')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
-        //.AddBody('{"name":"'+AName+'"}')
-        .Delete;
+        .AddBody(
+        '{' +
+        '  "messaging_product": "whatsapp", ' +
+        '  "pin":"123456"' +
+        '}')
+        .Post;
       response := Retorno.Content;
     except
       on E: Exception do
