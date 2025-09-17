@@ -73,6 +73,8 @@ type
     function register_Number(pPhone_Number_ID: string): string;
     function deregister_Number(pPhone_Number_ID: string): string;
 
+    function Generate_token_permanent(client_id, client_secret, code, redirect_uri: string): string;
+
     function UploadMedia(FileName: string): string;
     function PostMediaFile(FileName, MediaType: string): string;
     function DownloadMedia(id, MimeType: string): string;
@@ -306,6 +308,63 @@ begin
     except
     end;
 
+  end;
+
+end;
+
+function TWPPCloudAPI.Generate_token_permanent(client_id, client_secret, code,
+  redirect_uri: string): string;
+var
+  response: string;
+  json: string;
+  UTF8Texto: UTF8String;
+  MessagePayload: uRetMensagemApiOficial.TMessagePayload;
+begin
+  Result := '';
+  try
+
+    json :=
+      '{ ' +
+      '   "client_id": "' + client_id + '", ' +
+      '   "client_secret": "' + client_secret + '", ' +
+      '   "code": "' + code + '", ' +
+      '   "grant_type": "authorization_code", ' +
+      '   "redirect_uri": "' + redirect_uri +'" ' +
+      '}';
+
+    UTF8Texto := UTF8Encode(json);
+
+    try
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v23.0/oauth/access_token')
+        .ContentType('application/json')
+        //.TokenBearer(code)
+        .AddBody(UTF8Texto)
+        .Post
+        .Content;
+
+      if Assigned(FOnRetSendMessage) then
+        FOnRetSendMessage(Self, Response);
+
+      //gravar_log(response);
+    except
+      on E: Exception do
+      begin
+        //gravar_log('ERROR ' + e.Message + SLINEBREAK);
+        //Result := 'Error: ' + e.Message + SLineBreak + json + SLineBreak;
+        if Assigned(FOnRetSendMessage) then
+          FOnRetSendMessage(Self, Response + 'Error: ' + e.Message);
+
+        Result := 'Failed';
+        Exit;
+      end;
+    end;
+
+
+
+    Result := response;
+
+
+  finally
   end;
 
 end;
