@@ -22,7 +22,7 @@ uses
   System.SysUtils, System.Classes, System.JSON, System.Net.HttpClient, System.Net.URLClient, IdSSLOpenSSL, IdHTTP,
   uRetMensagemApiOficial, StrUtils, Horse, Horse.Commons,  Horse.Core, web.WebBroker,
   RESTRequest4D, REST.Types, REST.Client, System.Net.Mime, uTWPPCloudAPI.Emoticons, System.MaskUtils,
-  System.Types, System.IOUtils;
+  System.Types, System.IOUtils, System.NetEncoding;
 
 
 type
@@ -75,6 +75,8 @@ type
     function deregister_Number(pPhone_Number_ID: string): string;
 
     function Generate_token_permanent(client_id, client_secret, code, redirect_uri: string): string;
+
+    function Generate_billing_period(business_id, waba_id, period_start, period_end: string): string;
 
     function UploadMedia(FileName: string): string;
     function PostMediaFile(FileName, MediaType: string): string;
@@ -454,6 +456,51 @@ begin
         else
           Sleep(250 * (1 shl LTry));
       end;
+    end;
+  end;
+end;
+
+function TWPPCloudAPI.Generate_billing_period(business_id, waba_id, period_start, period_end: string): string;
+const
+  GRAPH_BASE = 'https://graph.facebook.com/v23.0/';
+  FIELDS = 'id,invoice_date,due_date,currency,amount,download_uri,status,account_id,account_type';
+var
+  url, accountIdsParam, response: string;
+begin
+  Result := '';
+  try
+    accountIdsParam := '["' + waba_id + '"]';
+
+    // Monta a URL com todos os parâmetros
+    url :=
+      GRAPH_BASE + business_id + '/business_invoices' +
+      '?account_ids=' + accountIdsParam +
+      '&type=INV' +
+      '&billing_period_start=' + period_start +    // ex: '2025-07'
+      '&billing_period_end='   + period_end +      // ex: '2025-10'
+      '&fields=' + FIELDS;
+
+    // Chamada GET sem body
+    response :=
+      TRequest.New
+        .BaseURL(url)
+        .Accept('application/json')
+        .ContentType('application/json')
+        .TokenBearer(TokenApiOficial)  // seu token válido (system user)
+        .Get
+        .Content;
+
+    // callback opcional
+    if Assigned(FOnRetSendMessage) then
+      FOnRetSendMessage(Self, response);
+
+    Result := response;
+  except
+    on E: Exception do
+    begin
+      if Assigned(FOnRetSendMessage) then
+        FOnRetSendMessage(Self, 'Error: ' + E.Message);
+      Result := 'Failed';
     end;
   end;
 end;
@@ -1508,6 +1555,9 @@ var
   response, json: string;
   MessagePayload: uRetMensagemApiOficial.TMessagePayload;
   UTF8Texto: UTF8String;
+const
+  UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
+       'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36';
 begin
   try
     if (length(waid) = 11) or (length(waid) = 10) then
@@ -1518,9 +1568,12 @@ begin
     UTF8Texto := UTF8Encode(json);
 
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v23.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
+        .AddHeader('User-Agent', UA)
+        .Timeout(60000)          // 60s para ler a resposta
+        .RaiseExceptionOn500(False)
         .AddBody(UTF8Texto)
         .Post.Content;
     except
