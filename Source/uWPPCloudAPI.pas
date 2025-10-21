@@ -742,7 +742,9 @@ var
 begin
   Result := '';
   try
-
+    if (Copy(waid,1,2) = '56') and (length(waid) = 11) then //Chile
+      waid := waid
+    else
     if (length(waid) = 11) or (length(waid) = 10) then
       waid := DDIDefault.ToString + waid;
 
@@ -870,6 +872,9 @@ var
 begin
   Result := '';
   try
+    if (Copy(waid,1,2) = '56') and (length(waid) = 11) then //Chile
+      waid := waid
+    else
     if (length(waid) = 11) or (length(waid) = 10) then
       waid := DDIDefault.ToString + waid;
 
@@ -1175,6 +1180,9 @@ begin
 
 
   try
+    if (Copy(waid,1,2) = '56') and (length(waid) = 11) then //Chile
+      waid := waid
+    else
     if (length(waid) = 11) or (length(waid) = 10) then
       waid := DDIDefault.ToString + waid;
 
@@ -1242,7 +1250,9 @@ begin
 
   try
 
-
+    if (Copy(waid,1,2) = '56') and (length(waid) = 11) then //Chile
+      waid := waid
+    else
     if (length(waid) = 11) or (length(waid) = 10) then
       waid := DDIDefault.ToString + waid;
 
@@ -1316,6 +1326,9 @@ var
 begin
   Result := '';
   try
+    if (Copy(waid,1,2) = '56') and (length(waid) = 11) then //Chile
+      waid := waid
+    else
     if (length(waid) = 11) or (length(waid) = 10) then
       waid := DDIDefault.ToString + waid;
 
