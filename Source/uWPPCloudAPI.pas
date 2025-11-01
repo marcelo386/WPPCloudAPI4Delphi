@@ -1311,7 +1311,7 @@ begin
     UTF8Texto := UTF8Encode(json);
 
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v23.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -1321,7 +1321,7 @@ begin
       on E: Exception do
       begin
         if Assigned(FOnRetSendMessage) then
-          FOnRetSendMessage(Self, Response + 'Error: ' + e.Message);
+          FOnRetSendMessage(Self, Response + 'Error: ' + e.Message + #13#10 + 'Response: ' + Response);
 
         Result := 'Failed';
         Exit;
@@ -1372,7 +1372,7 @@ begin
     UTF8Texto := UTF8Encode(json);
 
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v23.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -1382,7 +1382,7 @@ begin
       begin
         //Result := 'Error: ' + e.Message;
         if Assigned(FOnRetSendMessage) then
-          FOnRetSendMessage(Self, Response + 'Error: ' + e.Message);
+          FOnRetSendMessage(Self, Response + 'Error: ' + e.Message + #13#10 + 'Response: ' + Response);
 
         Result := 'Failed';
         Exit;
@@ -1393,13 +1393,12 @@ begin
       if Assigned(FOnRetSendMessage) then
         FOnRetSendMessage(Self, Response);
 
-
       MessagePayload := TMessagePayload.FromJSON(response);
       Result := MessagePayload.Messages[0].ID;
     except
       on E: Exception do
       begin
-        Result := 'Error: ' + e.Message;
+        Result := 'Error: ' + e.Message + #13#10 + 'Response: ' + Response;
         Exit;
       end;
     end;
