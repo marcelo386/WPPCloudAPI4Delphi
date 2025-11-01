@@ -170,6 +170,47 @@ public
   class function FromJsonString(AJsonString: string): TContextClass;
 end;
 
+TPhonesClass = class
+private
+  FPhone: String;
+  FType: String;
+  FWa_id: String;
+public
+  property phone: String read FPhone write FPhone;
+  property &type: String read FType write FType;
+  property wa_id: String read FWa_id write FWa_id;
+  //function ToJsonString: string;
+  //class function FromJsonString(AJsonString: string): TPhonesClass;
+end;
+
+TNameClass = class
+private
+  FFirst_name: String;
+  FFormatted_name: String;
+  FLast_name: String;
+  FMiddle_name: String;
+public
+  property first_name: String read FFirst_name write FFirst_name;
+  property formatted_name: String read FFormatted_name write FFormatted_name;
+  property last_name: String read FLast_name write FLast_name;
+  property middle_name: String read FMiddle_name write FMiddle_name;
+  //function ToJsonString: string;
+  //class function FromJsonString(AJsonString: string): TNameClass;
+end;
+
+TContactsClass_001 = class
+private
+  FName: TNameClass;
+  FPhones: TArray<TPhonesClass>;
+public
+  property name: TNameClass read FName write FName;
+  property phones: TArray<TPhonesClass> read FPhones write FPhones;
+  //constructor Create;
+  //destructor Destroy; override;
+  //function ToJsonString: string;
+  //class function FromJsonString(AJsonString: string): TContactsClass_001;
+end;
+
 TMessagesClass = class
 private
   FFrom: String;
@@ -186,6 +227,7 @@ private
   FSticker: TStickerClass;
   FInteractive: TInteractiveClass;
   FReaction: TReactionClass;
+  FContacts: TArray<TContactsClass_001>;
 public
   property from: String read FFrom write FFrom;
   property id: String read FId write FId;
@@ -201,6 +243,7 @@ public
   property context: TContextClass read FContext write FContext;
   property interactive: TInteractiveClass read FInteractive write FInteractive;
   property reaction: TReactionClass read FReaction write FReaction;
+  property contacts: TArray<TContactsClass_001> read FContacts write FContacts;
 
   constructor Create;
   destructor Destroy; override;

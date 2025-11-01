@@ -1,17 +1,17 @@
-{
+Ôªø{
 ####################################################################################################################
   Obs:
-     - CÛdigo aberto a comunidade Delphi, desde que mantenha os dados dos autores e mantendo sempre o nome do IDEALIZADOR
+     - C√≥digo aberto a comunidade Delphi, desde que mantenha os dados dos autores e mantendo sempre o nome do IDEALIZADOR
        Marcelo dos Santos de Oliveira;
 
 ####################################################################################################################
-                                  EvoluÁ„o do CÛdigo
+                                  Evolu√ß√£o do C√≥digo
 ####################################################################################################################
   Autor........: Marcelo Oliveira
   Email........: marcelo.broz@hotmail.com
   Data.........: 01/03/2023
   Identificador: @Marcelo
-  ModificaÁ„o..:
+  Modifica√ß√£o..:
 ####################################################################################################################
 }
 unit uWPPCloudAPI;
@@ -21,7 +21,8 @@ interface
 uses
   System.SysUtils, System.Classes, System.JSON, System.Net.HttpClient, System.Net.URLClient, IdSSLOpenSSL, IdHTTP,
   uRetMensagemApiOficial, StrUtils, Horse, Horse.Commons,  Horse.Core, web.WebBroker,
-  RESTRequest4D, REST.Types, REST.Client, System.Net.Mime, uTWPPCloudAPI.Emoticons, System.MaskUtils;
+  RESTRequest4D, REST.Types, REST.Client, System.Net.Mime, uTWPPCloudAPI.Emoticons, System.MaskUtils,
+  System.Types, System.IOUtils, System.NetEncoding;
 
 
 type
@@ -74,6 +75,8 @@ type
     function deregister_Number(pPhone_Number_ID: string): string;
 
     function Generate_token_permanent(client_id, client_secret, code, redirect_uri: string): string;
+
+    function Generate_billing_period(business_id, waba_id, period_start, period_end: string): string;
 
     function UploadMedia(FileName: string): string;
     function PostMediaFile(FileName, MediaType: string): string;
@@ -135,7 +138,7 @@ begin
   vText  := StringReplace(vText, '/'       ,'\/'   , [rfReplaceAll] ); // opcional
   vText  := StringReplace(vText, #8        ,'\b'   ,  [rfReplaceAll]); // backspace
   vText  := StringReplace(vText, #12       ,'\f'   ,  [rfReplaceAll]); // form feed
-  vText  := StringReplace(vText, #9        ,'\t'   ,  [rfReplaceAll]); // tabulaÁ„o
+  vText  := StringReplace(vText, #9        ,'\t'   ,  [rfReplaceAll]); // tabula√ß√£o
   vText  := StringReplace(vText, #$A       ,' \n'  , [rfReplaceAll] );
   vText  := StringReplace(vText, #$A#$A    ,' \n'  , [rfReplaceAll] );
   Result := vText;
@@ -180,28 +183,11 @@ var
 begin
   Result := '';
   try
-    {if (length(waid) = 11) or (length(waid) = 10) then
-      waid := DDIDefault.ToString + waid;
-    }
-
-    //body := CaractersWeb(body);
-
-    (*json :=
-      '{ ' +
-      '  "messaging_product": "whatsapp", ' +
-      '  "recipient_type": "individual", ' +
-      '  "to": "' + waid + '", ' +
-      '  "type": "text", ' +
-      '  "text": {  ' + // the text object
-      '    "preview_url": ' + previewurl + ',  ' +
-      '    "body": "' + body + '"  ' +
-      '    } ' +
-      '}'; *)
 
     UTF8Texto := UTF8Encode(json);
 
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + id + '')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v23.0/' + id + '')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         //.AddBody(UTF8Texto)
@@ -238,6 +224,7 @@ begin
 
 end;
 
+(*
 function TWPPCloudAPI.DownloadMediaURL(url, MimeType, FileName: string): string;
 var
   response: string;
@@ -252,10 +239,9 @@ begin
     try
       Stream := TStream.Create;
 
-      Stream := TRequest.New.BaseURL(url)
-        //.ContentType('application/json')
+      Stream := TRequest.New
+        .BaseURL(url)
         .ContentType(MimeType)
-        //.AcceptEncoding('UTF8')
         .TokenBearer(TokenApiOficial)
         .Get
         .ContentStream;
@@ -263,7 +249,6 @@ begin
       on E: Exception do
       begin
         Result := 'Error: ' + e.Message;
-        //Exit;
       end;
     end;
 
@@ -272,7 +257,7 @@ begin
       begin
         FileStream := TFileStream.Create(FileName, fmCreate);
         try
-          Stream.Position := 0; // Certifique-se de que a posiÁ„o do stream est· no inÌcio
+          Stream.Position := 0; // Certifique-se de que a posi√ß√£o do stream est√° no in√≠cio
 
           repeat
             BytesRead := Stream.Read(Buffer, SizeOf(Buffer));
@@ -310,6 +295,214 @@ begin
 
   end;
 
+end;
+*)
+
+function MimeToExt(const AMime: string): string;
+begin
+  // bem simples; amplie conforme necess√°rio
+  if SameText(AMime, 'image/jpeg') or SameText(AMime, 'image/jpg') then Exit('.jpg');
+  if SameText(AMime, 'image/png')  then Exit('.png');
+  if SameText(AMime, 'image/gif')  then Exit('.gif');
+  if SameText(AMime, 'audio/mpeg') then Exit('.mp3');
+  if SameText(AMime, 'audio/ogg')  then Exit('.ogg');
+  if SameText(AMime, 'video/mp4')  then Exit('.mp4');
+  if SameText(AMime, 'application/pdf') then Exit('.pdf');
+  Result := ''; // desconhecido
+end;
+
+function EnsureExt(const AFileName, AMime: string): string;
+begin
+  Result := AFileName;
+  if ExtractFileExt(Result) = '' then
+  begin
+    var LExt := MimeToExt(AMime);
+    if LExt <> '' then
+      Result := Result + LExt;
+  end;
+end;
+
+function Shorten(const S: string; MaxLen: Integer = 256): string;
+begin
+  Result := S;
+  if Length(Result) > MaxLen then
+    SetLength(Result, MaxLen);
+end;
+
+function TWPPCloudAPI.DownloadMediaURL(url, MimeType, FileName: string): string;
+const
+  TIMEOUT_MS = 30000;  // 30s
+  MAX_RETRIES = 3;
+var
+  LReq : IRequest;
+  LResp: IResponse;
+  LOut : TFileStream;
+  LTry : Integer;
+  LFinalName, LDir, LBodyErr: string;
+
+  function IsTransient(ACode: Integer): Boolean;
+  begin
+    // trate como transit√≥rio: rate limit ou falhas de servidor/gateway
+    Result := (ACode = 429) or (ACode = 500) or (ACode = 502) or (ACode = 503) or (ACode = 504);
+  end;
+
+begin
+  Result := '';
+
+  // Garante diret√≥rio e extens√£o
+  LFinalName := EnsureExt(FileName.Trim, MimeType.Trim);
+  LDir := ExtractFileDir(LFinalName);
+  if (LDir <> '') and not TDirectory.Exists(LDir) then
+  begin
+    if not ForceDirectories(LDir) then
+    begin
+      Result := 'Error: unable to create directory: ' + LDir;
+      Exit;
+    end;
+  end;
+
+  // Monta a request base uma vez
+  LReq := TRequest.New
+            .BaseURL(url)                     // pode ser a URL completa
+            .Accept(MimeType)                 // o que voc√™ espera receber
+            .AddHeader('User-Agent',
+                       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
+                       'AppleWebKit/537.36 (KHTML, like Gecko) ' +
+                       'Chrome/120.0.0.0 Safari/537.36')
+            .Timeout(TIMEOUT_MS)
+            .RaiseExceptionOn500(False);      // n√£o lan√ßar exce√ß√£o autom√°tica em 500+
+
+  if TokenApiOficial <> '' then
+    LReq.TokenBearer(TokenApiOficial);
+
+  // Tentativas com backoff exponencial simples
+  for LTry := 0 to MAX_RETRIES - 1 do
+  begin
+    try
+      LResp := LReq.Get;
+
+      if LResp = nil then
+      begin
+        Result := 'Error: empty response object';
+        Exit;
+      end;
+
+      // HTTP status
+      if (LResp.StatusCode < 200) or (LResp.StatusCode >= 300) then
+      begin
+        // captura um trecho do corpo para ajudar no diagn√≥stico
+        LBodyErr := Shorten(LResp.Content);
+        // se for erro transit√≥rio, tenta de novo com backoff
+        if (LTry < MAX_RETRIES - 1) and IsTransient(LResp.StatusCode) then
+        begin
+          Sleep(250 * (1 shl LTry)); // 250ms, 500ms, 1000ms
+          Continue;
+        end;
+
+        Result := Format('Error: HTTP %d - %s. %s',
+                         [LResp.StatusCode, LResp.StatusText, LBodyErr]);
+        Exit;
+      end;
+
+      // Conte√∫do
+      if (LResp.ContentStream = nil) then
+      begin
+        // alguns servidores s√≥ populam Content (string). Tente cair para Bytes.
+        if (Length(LResp.RawBytes) = 0) and (LResp.Content = '') then
+        begin
+          Result := 'Error: empty content stream';
+          Exit;
+        end;
+
+        // Sem stream, mas com bytes: gravar direto
+        LOut := TFileStream.Create(LFinalName, fmCreate);
+        try
+          if Length(LResp.RawBytes) > 0 then
+            LOut.WriteBuffer(PByte(LResp.RawBytes)^, Length(LResp.RawBytes))
+          else
+          begin
+            // √∫ltimo recurso: Content string ‚Üí bytes (pode n√£o ser ideal p/ bin√°rio)
+            var LBytes := TEncoding.UTF8.GetBytes(LResp.Content);
+            LOut.WriteBuffer(PByte(LBytes)^, Length(LBytes));
+          end;
+        finally
+          LOut.Free;
+        end;
+      end
+      else
+      begin
+        // Stream presente: copiar de forma eficiente
+        LResp.ContentStream.Position := 0;
+        LOut := TFileStream.Create(LFinalName, fmCreate);
+        try
+          LOut.CopyFrom(LResp.ContentStream, 0); // copia tudo
+        finally
+          LOut.Free;
+        end;
+      end;
+
+      // Sucesso
+      Result := LFinalName;
+      if Assigned(FOnRetSendMessage) then
+        FOnRetSendMessage(Self, Result + sLineBreak);
+      Exit;
+
+    except
+      on E: Exception do
+      begin
+        // Se for a √∫ltima tentativa, retorna o erro; sen√£o, faz backoff
+        if LTry >= MAX_RETRIES - 1 then
+          Result := 'Error: ' + E.Message
+        else
+          Sleep(250 * (1 shl LTry));
+      end;
+    end;
+  end;
+end;
+
+function TWPPCloudAPI.Generate_billing_period(business_id, waba_id, period_start, period_end: string): string;
+const
+  GRAPH_BASE = 'https://graph.facebook.com/v23.0/';
+  FIELDS = 'id,invoice_date,due_date,currency,amount,download_uri,status,account_id,account_type';
+var
+  url, accountIdsParam, response: string;
+begin
+  Result := '';
+  try
+    accountIdsParam := '["' + waba_id + '"]';
+
+    // Monta a URL com todos os par√¢metros
+    url :=
+      GRAPH_BASE + business_id + '/business_invoices' +
+      '?account_ids=' + accountIdsParam +
+      '&type=INV' +
+      '&billing_period_start=' + period_start +    // ex: '2025-07'
+      '&billing_period_end='   + period_end +      // ex: '2025-10'
+      '&fields=' + FIELDS;
+
+    // Chamada GET sem body
+    response :=
+      TRequest.New
+        .BaseURL(url)
+        .Accept('application/json')
+        .ContentType('application/json')
+        .TokenBearer(TokenApiOficial)  // seu token v√°lido (system user)
+        .Get
+        .Content;
+
+    // callback opcional
+    if Assigned(FOnRetSendMessage) then
+      FOnRetSendMessage(Self, response);
+
+    Result := response;
+  except
+    on E: Exception do
+    begin
+      if Assigned(FOnRetSendMessage) then
+        FOnRetSendMessage(Self, 'Error: ' + E.Message);
+      Result := 'Failed';
+    end;
+  end;
 end;
 
 function TWPPCloudAPI.Generate_token_permanent(client_id, client_secret, code,
@@ -474,7 +667,7 @@ begin
       '        "type": "reply", ' +
       '        "reply": { ' +
       '          "id": "UNIQUE_BUTTON_ID_2", ' +
-      '          "title": "N√O" ' +
+      '          "title": "N√ÉO" ' +
       '        } ' +
       '      } ' +
       '    ]  ' +
@@ -549,7 +742,9 @@ var
 begin
   Result := '';
   try
-
+    if (Copy(waid,1,2) = '56') and (length(waid) = 11) then //Chile
+      waid := waid
+    else
     if (length(waid) = 11) or (length(waid) = 10) then
       waid := DDIDefault.ToString + waid;
 
@@ -677,6 +872,9 @@ var
 begin
   Result := '';
   try
+    if (Copy(waid,1,2) = '56') and (length(waid) = 11) then //Chile
+      waid := waid
+    else
     if (length(waid) = 11) or (length(waid) = 10) then
       waid := DDIDefault.ToString + waid;
 
@@ -982,6 +1180,9 @@ begin
 
 
   try
+    if (Copy(waid,1,2) = '56') and (length(waid) = 11) then //Chile
+      waid := waid
+    else
     if (length(waid) = 11) or (length(waid) = 10) then
       waid := DDIDefault.ToString + waid;
 
@@ -1049,7 +1250,9 @@ begin
 
   try
 
-
+    if (Copy(waid,1,2) = '56') and (length(waid) = 11) then //Chile
+      waid := waid
+    else
     if (length(waid) = 11) or (length(waid) = 10) then
       waid := DDIDefault.ToString + waid;
 
@@ -1123,6 +1326,9 @@ var
 begin
   Result := '';
   try
+    if (Copy(waid,1,2) = '56') and (length(waid) = 11) then //Chile
+      waid := waid
+    else
     if (length(waid) = 11) or (length(waid) = 10) then
       waid := DDIDefault.ToString + waid;
 
@@ -1222,7 +1428,7 @@ begin
         DataStream
         //'recipient={"id":"' + recipient + '"}&message={"text":"' + Text + '"}'
       );
-      // Aqui vocÍ pode lidar com a resposta se necess·rio
+      // Aqui voc√™ pode lidar com a resposta se necess√°rio
       //Writeln(Response);
       Result := Response;
 
@@ -1362,6 +1568,9 @@ var
   response, json: string;
   MessagePayload: uRetMensagemApiOficial.TMessagePayload;
   UTF8Texto: UTF8String;
+const
+  UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
+       'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36';
 begin
   try
     if (length(waid) = 11) or (length(waid) = 10) then
@@ -1375,6 +1584,9 @@ begin
       response:= TRequest.New.BaseURL('https://graph.facebook.com/v23.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
+        .AddHeader('User-Agent', UA)
+        .Timeout(60000)          // 60s para ler a resposta
+        .RaiseExceptionOn500(False)
         .AddBody(UTF8Texto)
         .Post.Content;
     except
@@ -1575,22 +1787,22 @@ var
 begin
   MediaID := PHONE_NUMBER_ID;//'123456';
   AccessToken := TokenApiOficial;//'<ACCESS_TOKEN>';
-  FilePath := 'C:\Users\megao\Desktop\Temp\ArquivosTesteEnviar\Carta de CobranÁa2.pdf';
+  FilePath := 'C:\Users\megao\Desktop\Temp\ArquivosTesteEnviar\Carta de Cobran√ßa2.pdf';
   MediaType := 'document/pdf';
   MessagingProduct := 'whatsapp';
 
-  // Criando o objeto TRESTClient e configurando as propriedades b·sicas
+  // Criando o objeto TRESTClient e configurando as propriedades b√°sicas
   RESTClient := TRESTClient.Create('https://graph.facebook.com/v19.0/');
   RESTClient.Accept := 'application/json';
   RESTClient.ContentType := 'multipart/form-data';
   RESTClient.Params.AddItem('access_token', AccessToken, pkGETorPOST);
 
-  // Criando o objeto TRESTRequest e configurando as propriedades b·sicas
+  // Criando o objeto TRESTRequest e configurando as propriedades b√°sicas
   RESTRequest := TRESTRequest.Create(RESTClient);
   RESTRequest.Method := rmPOST;
   RESTRequest.Resource := MediaID + '/media';
 
-  // Criando o objeto TMultipartFormData e adicionando os campos da requisiÁ„o
+  // Criando o objeto TMultipartFormData e adicionando os campos da requisi√ß√£o
   RequestBody := TMultipartFormData.Create;
   //RequestBody.AddFile('file', FilePath, MediaType);
   //RequestBody.AddField('type', MediaType, 'text/plain');
@@ -1600,11 +1812,11 @@ begin
   RequestBody.AddField('type', MediaType);
   RequestBody.AddField('messaging_product', MessagingProduct);
 
-  // Configurando o corpo da requisiÁ„o com o objeto TMultipartFormData
+  // Configurando o corpo da requisi√ß√£o com o objeto TMultipartFormData
   RESTRequest.AddParameter('multipart/form-data', RequestBody.ToString, pkREQUESTBODY);
   //RESTRequest.AddParameter('multipart/form-data', RequestBody);
 
-  // Executando a requisiÁ„o e obtendo a resposta
+  // Executando a requisi√ß√£o e obtendo a resposta
   RESTResponse := TRESTResponse.Create(RESTRequest);
   try
     try
@@ -1680,10 +1892,10 @@ var
 begin
   try
     // Crie um objeto TFileStream para ler o arquivo PDF
-    FileStream := TFileStream.Create('C:\Users\megao\Desktop\Temp\ArquivosTesteEnviar\Carta_de_CobranÁa2.pdf', fmOpenRead);
+    FileStream := TFileStream.Create('C:\Users\megao\Desktop\Temp\ArquivosTesteEnviar\Carta_de_Cobran√ßa2.pdf', fmOpenRead);
 
-    //FileName := 'Carta_de_CobranÁa2.pdf';
-    FileName := '\\localhost\ArquivosTesteEnviar\Carta_de_CobranÁa2.pdf';
+    //FileName := 'Carta_de_Cobran√ßa2.pdf';
+    FileName := '\\localhost\ArquivosTesteEnviar\Carta_de_Cobran√ßa2.pdf';
 
     // Crie um objeto TMemoryStream para armazenar os dados do arquivo PDF
     MemoryStream := TMemoryStream.Create;
@@ -1694,10 +1906,10 @@ begin
       MemoryStream.CopyFrom(FileStream, 0);
       //LStream.CopyFrom(FileStream, 0);
       //LStream.CopyFrom(FileStream, 0);
-      //TMemoryStream(LStream).LoadFromFile('C:\Users\megao\Desktop\Temp\ArquivosTesteEnviar\Carta_de_CobranÁa2.pdf');
+      //TMemoryStream(LStream).LoadFromFile('C:\Users\megao\Desktop\Temp\ArquivosTesteEnviar\Carta_de_Cobran√ßa2.pdf');
       LStream := MemoryStream;
 
-      {LStream.Position := 0; // Certifique-se de que a posiÁ„o do LStream est· no inÌcio
+      {LStream.Position := 0; // Certifique-se de que a posi√ß√£o do LStream est√° no in√≠cio
 
       repeat
         BytesRead := LStream.Read(Buffer, SizeOf(Buffer));
@@ -1707,11 +1919,11 @@ begin
       }
 
       try
-        //LStream := TFileStream.Create('C:\Users\megao\Desktop\Temp\ArquivosTesteEnviar\Carta_de_CobranÁa2.pdf', fmOpenRead or fmShareDenyWrite);
+        //LStream := TFileStream.Create('C:\Users\megao\Desktop\Temp\ArquivosTesteEnviar\Carta_de_Cobran√ßa2.pdf', fmOpenRead or fmShareDenyWrite);
 
         //Stream := TFileStream.Create('C:\Users\megao\Desktop\Comunidade_48x48.png', fmOpenRead or fmShareDenyWrite);
-        //FileName := '\\LAPTOP-3HVUPL9K\ArquivosTesteEnviar\Carta de CobranÁa2.pdf';
-        //FileName := '\\localhost\ArquivosTesteEnviar\Carta_de_CobranÁa2.pdf';
+        //FileName := '\\LAPTOP-3HVUPL9K\ArquivosTesteEnviar\Carta de Cobran√ßa2.pdf';
+        //FileName := '\\localhost\ArquivosTesteEnviar\Carta_de_Cobran√ßa2.pdf';
         try
           //SetLength(Buffer, Stream.Size);
           //Stream.Read(Buffer[0], Length(Buffer));
@@ -1781,8 +1993,8 @@ begin
           Exit;
         end;
       end;
-          // Agora vocÍ tem o arquivo PDF carregado no TMemoryStream
-          // VocÍ pode fazer o que quiser com os dados, como exibi-los em um componente PDF ou manipul·-los de outras maneiras.
+          // Agora voc√™ tem o arquivo PDF carregado no TMemoryStream
+          // Voc√™ pode fazer o que quiser com os dados, como exibi-los em um componente PDF ou manipul√°-los de outras maneiras.
 
     finally
       MemoryStream.Free;
@@ -1818,13 +2030,13 @@ var
 begin
   ContentTypeList := TStringList.Create;
   try
-    // Mapeamento de extensıes para tipos de conte˙do
+    // Mapeamento de extens√µes para tipos de conte√∫do
     ContentTypeList.Values['.html'] := 'text/html';
     ContentTypeList.Values['.htm'] := 'text/html';
     ContentTypeList.Values['.txt'] := 'text/plain';
     ContentTypeList.Values['.log'] := 'text/plain';
     ContentTypeList.Values['.csv'] := 'text/csv';
-    ContentTypeList.Values['.jpg'] := 'image/jpeg';
+    ContentTypeList.Values['.jpg'] := 'image/jpg';
     ContentTypeList.Values['.jpeg'] := 'image/jpeg';
     ContentTypeList.Values['.png'] := 'image/png';
     ContentTypeList.Values['.gif'] := 'image/gif';
@@ -1861,7 +2073,7 @@ begin
     ContentTypeList.Values['.otf'] := 'font/otf';
     ContentTypeList.Values['.woff'] := 'font/woff';
     ContentTypeList.Values['.woff2'] := 'font/woff2';
-    // Adicione mais extensıes e tipos de conte˙do conforme necess·rio
+    // Adicione mais extens√µes e tipos de conte√∫do conforme necess√°rio
 
     Result := ContentTypeList.Values[AContentType];
   finally
@@ -1879,7 +2091,8 @@ begin
     ContentTypeList.Values['text/html'] := '.html';
     ContentTypeList.Values['text/plain'] := '.txt';
     ContentTypeList.Values['text/csv'] := '.csv';
-    ContentTypeList.Values['image/jpeg'] := '.jpg';
+    ContentTypeList.Values['image/jpeg'] := '.jpeg';
+    ContentTypeList.Values['image/jpg'] := '.jpg';
     ContentTypeList.Values['image/png'] := '.png';
     ContentTypeList.Values['image/gif'] := '.gif';
     ContentTypeList.Values['image/bmp'] := '.bmp';
@@ -1916,7 +2129,7 @@ begin
     ContentTypeList.Values['font/otf'] := '.otf';
     ContentTypeList.Values['font/woff'] := '.woff';
     ContentTypeList.Values['font/woff2'] := '.woff2';
-    // Adicione mais tipos de conte˙do e extensıes conforme necess·rio
+    // Adicione mais tipos de conte√∫do e extens√µes conforme necess√°rio
 
     Result := ContentTypeList.Values[AFileExtension];
   finally
