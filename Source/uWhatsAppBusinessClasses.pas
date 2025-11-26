@@ -278,10 +278,12 @@ private
   FBillable: Boolean;
   FCategory: String;
   FPricing_model: String;
+  Ftype: String;
 public
   property billable: Boolean read FBillable write FBillable;
   property category: String read FCategory write FCategory;
   property pricing_model: String read FPricing_model write FPricing_model;
+  property &type: String read Ftype write Ftype;
   function ToJsonString: string;
   class function FromJsonString(AJsonString: string): TPricingClass;
 end;
