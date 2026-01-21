@@ -55,6 +55,8 @@ type
     //Individual
     function SendText(waid, body: string; previewurl: string = 'false'): string;
     function SendFile(waid, body, typeFile, url: string; const filename: string = ''): string;
+    function SendFileMediaId(waid, body, typeFile, MediaId: string; const filename: string = ''): string;
+
     function SendButton(waid, body, actions, header, footer: string): string;
     function SendListMenu(waid, body, sections, header, footer, Button_Text: string): string;
     function SendContact(waid, phoneNumber, formatted_name, options: string): string;
@@ -153,7 +155,7 @@ var
 begin
   try
     try
-      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v23.0/' + pPhone_Number_ID + '/deregister')
+      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v24.0/' + pPhone_Number_ID + '/deregister')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         //.AddBody('{"name":"'+AName+'"}')
@@ -187,7 +189,7 @@ begin
     UTF8Texto := UTF8Encode(json);
 
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v23.0/' + id + '')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v24.0/' + id + '')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         //.AddBody(UTF8Texto)
@@ -462,7 +464,7 @@ end;
 
 function TWPPCloudAPI.Generate_billing_period(business_id, waba_id, period_start, period_end: string): string;
 const
-  GRAPH_BASE = 'https://graph.facebook.com/v23.0/';
+  GRAPH_BASE = 'https://graph.facebook.com/v24.0/';
   FIELDS = 'id,invoice_date,due_date,currency,amount,download_uri,status,account_id,account_type';
 var
   url, accountIdsParam, response: string;
@@ -528,7 +530,7 @@ begin
     UTF8Texto := UTF8Encode(json);
 
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v23.0/oauth/access_token')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v24.0/oauth/access_token')
         .ContentType('application/json')
         //.TokenBearer(code)
         .AddBody(UTF8Texto)
@@ -584,7 +586,7 @@ begin
     UTF8Texto := UTF8Encode(json);
 
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v24.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -680,7 +682,7 @@ begin
     UTF8Texto := UTF8Encode(json);
 
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v24.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -813,7 +815,7 @@ begin
     UTF8Texto := UTF8Encode(json);
     try
 
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v24.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -896,7 +898,7 @@ begin
 
     UTF8Texto := UTF8Encode(json);
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v24.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -947,6 +949,89 @@ begin
   finally
   end;
 
+end;
+
+function TWPPCloudAPI.SendFileMediaId(waid, body, typeFile, MediaId: string;
+  const filename: string): string;
+var
+  response: string;
+  json: string;
+  UTF8Texto: UTF8String;
+  MessagePayload: uRetMensagemApiOficial.TMessagePayload;
+begin
+  Result := '';
+  try
+    if (Copy(waid,1,2) = '56') and (length(waid) = 11) then //Chile
+      waid := waid
+    else
+    if (length(waid) = 11) or (length(waid) = 10) then
+      waid := DDIDefault.ToString + waid;
+
+    body := CaractersWeb(body);
+
+    json :=
+      '{ ' +
+      '  "messaging_product": "whatsapp", ' +
+      '  "recipient_type": "individual", ' +
+      '  "to": "' + waid + '", ' +
+      '  "type": "' + typeFile + '", ' +
+      '  "' + typeFile + '": {  ' +
+      '  "id": "' + MediaId + '", ' +
+      '    } ' +
+      '}';
+
+    UTF8Texto := UTF8Encode(json);
+    try
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v24.0/' + PHONE_NUMBER_ID + '/messages')
+        .ContentType('application/json')
+        .TokenBearer(TokenApiOficial)
+        .AddBody(UTF8Texto)
+        .Post
+        .Content;
+
+      //gravar_log(response);
+    except
+      on E: Exception do
+      begin
+        if Assigned(FOnRetSendMessage) then
+          FOnRetSendMessage(Self, Response + 'Error: ' + e.Message);
+
+        Result := 'Failed';
+        Exit;
+      end;
+    end;
+
+    try
+      if Assigned(FOnRetSendMessage) then
+        FOnRetSendMessage(Self, Response);
+
+      //Number Invalid
+      if pos('MESSAGE UNDELIVERABLE', AnsiUpperCase(Response)) > 0 then
+      begin
+        Result := 'MESSAGE UNDELIVERABLE';
+        Exit;
+      end;
+
+    except on E: Exception do
+    end;
+
+    try
+      MessagePayload := TMessagePayload.FromJSON(response);
+      Result := MessagePayload.Messages[0].ID;
+    except
+      on E: Exception do
+      begin
+        Result := 'Failed';
+        Exit;
+      end;
+    end;
+
+    //MemoLogApiOficial.Lines.Add(response);
+    //MemoLogApiOficial.Lines.Add('');
+    //MemoLogApiOficial.Lines.Add('Unique id: ' + MessagePayload.Messages[0].ID);
+    //gravar_log('Unique id: ' + MessagePayload.Messages[0].ID);
+  finally
+  end;
 end;
 
 function TWPPCloudAPI.SendListMenu(waid, body, sections, header, footer, Button_Text: string): string;
@@ -1035,7 +1120,7 @@ begin
 
     try
 
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v24.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -1131,7 +1216,7 @@ begin
 
     try
 
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v24.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -1200,7 +1285,7 @@ begin
 
     UTF8Texto := UTF8Encode(json);
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v24.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -1275,7 +1360,7 @@ begin
     UTF8Texto := UTF8Encode(json);
 
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v24.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -1349,7 +1434,7 @@ begin
     UTF8Texto := UTF8Encode(json);
 
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v24.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -1424,7 +1509,7 @@ begin
     try
       HTTP.Request.ContentType := 'application/x-www-form-urlencoded';
       Response := HTTP.Post(
-        'https://graph.facebook.com/v19.0/me/messages?access_token=' + TokenApiInstagram,
+        'https://graph.facebook.com/v24.0/me/messages?access_token=' + TokenApiInstagram,
         DataStream
         //'recipient={"id":"' + recipient + '"}&message={"text":"' + Text + '"}'
       );
@@ -1459,7 +1544,7 @@ begin
     try
       //'https://graph.facebook.com/LATEST-API-VERSION/me/messages?access_token=' + AccessToken,
       //'recipient={"id":"' + IGSID + '"}&message={"text":"' + TextOrLink + '"}'
-      response := TRequest.New.BaseURL('https://graph.facebook.com/v19.0/me/messages?access_token=' + TokenApiInstagram )
+      response := TRequest.New.BaseURL('https://graph.facebook.com/v24.0/me/messages?access_token=' + TokenApiInstagram )
         //.ContentType('application/json')
         .ContentType('application/x-www-form-urlencoded')
         //.TokenBearer(TokenApiInstagram)
@@ -1517,7 +1602,7 @@ begin
     UTF8Texto := UTF8Encode(json);
 
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v23.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v24.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -1581,7 +1666,7 @@ begin
     UTF8Texto := UTF8Encode(json);
 
     try
-      response:= TRequest.New.BaseURL('https://graph.facebook.com/v23.0/' + PHONE_NUMBER_ID + '/messages')
+      response:= TRequest.New.BaseURL('https://graph.facebook.com/v24.0/' + PHONE_NUMBER_ID + '/messages')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddHeader('User-Agent', UA)
@@ -1691,7 +1776,7 @@ begin
     json := jsonTemplate;
     UTF8Texto := UTF8Encode(json);
     try
-      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/message_templates')
+      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v24.0/' + PHONE_NUMBER_ID + '/message_templates')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(UTF8Texto)
@@ -1720,7 +1805,7 @@ var
 begin
   try
     try
-      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/message_templates')
+      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v24.0/' + PHONE_NUMBER_ID + '/message_templates')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody('{"name":"'+AName+'"}')
@@ -1749,7 +1834,7 @@ begin
   try
 
     try
-      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/message_templates')
+      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v24.0/' + PHONE_NUMBER_ID + '/message_templates')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .Get;
@@ -1774,7 +1859,73 @@ begin
 end;
 
 function TWPPCloudAPI.PostMediaFile(FileName, MediaType: string): string;
-var
+Var
+  HTTP: THTTPClient;
+  Params: TMultipartFormData;
+  Response: IHTTPResponse;
+  JSONObj: TJSONObject;
+  JSONValue: TJSONValue;
+  FilePath: string;
+  MediaIDNewLine: string;
+begin
+  HTTP := THTTPClient.Create;
+  Params := TMultipartFormData.Create;
+  try
+    // Adiciona o arquivo PDF
+    //FilePath := 'C:\Documentos\manual_video.pdf';
+    FilePath := FileName;
+    Params.AddField('messaging_product', 'whatsapp');
+
+    //Params.AddField('type', 'application/pdf');
+    //Params.AddFile('file', FilePath, 'application/pdf');
+    Params.AddField('type', MediaType);
+    Params.AddFile('file', FilePath, MediaType);
+
+    HTTP.CustomHeaders['Authorization'] := 'Bearer ' + TokenApiOficial;
+
+    try
+      Response := HTTP.Post('https://graph.facebook.com/v24.0/' + PHONE_NUMBER_ID + '/media', Params);
+    except
+      on E: Exception do
+      begin
+        if Assigned(FOnRetSendMessage) then
+          FOnRetSendMessage(Self, 'Error: ' + E.Message);
+        Result := 'Failed';
+        Exit;
+      end;
+    end;
+    // POST para obter o ID
+
+    if Assigned(FOnRetSendMessage) then
+      FOnRetSendMessage(Self, response.ContentAsString);
+
+    // Processar a resposta JSON para obter o id
+    JSONObj := TJSONObject.ParseJSONValue(Response.ContentAsString) as TJSONObject;
+    try
+      if Assigned(JSONObj) then
+      begin
+        if JSONObj.TryGetValue('id', JSONValue) then
+        begin
+          if (JSONValue <> nil) and not (JSONValue is TJSONNull) then
+            MediaIDNewLine := JSONValue.Value
+          else
+            MediaIDNewLine := ''; // null
+        end
+        else
+          MediaIDNewLine := ''; // não existe (undefined)
+
+        Result := MediaIDNewLine;
+      end;
+    finally
+      JSONObj.Free;
+    end;
+
+  finally
+    Params.Free;
+    HTTP.Free;
+  end;
+
+{var
   RESTClient: TRESTClient;
   RESTRequest: TRESTRequest;
   RESTResponse: TRESTResponse;
@@ -1792,7 +1943,7 @@ begin
   MessagingProduct := 'whatsapp';
 
   // Criando o objeto TRESTClient e configurando as propriedades básicas
-  RESTClient := TRESTClient.Create('https://graph.facebook.com/v19.0/');
+  RESTClient := TRESTClient.Create('https://graph.facebook.com/v24.0/');
   RESTClient.Accept := 'application/json';
   RESTClient.ContentType := 'multipart/form-data';
   RESTClient.Params.AddItem('access_token', AccessToken, pkGETorPOST);
@@ -1835,6 +1986,7 @@ begin
   finally
     RESTResponse.Free;
   end;
+}
 end;
 
 function TWPPCloudAPI.register_Number(pPhone_Number_ID: string): string;
@@ -1846,7 +1998,7 @@ var
 begin
   try
     try
-      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v23.0/' + pPhone_Number_ID + '/register')
+      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v24.0/' + pPhone_Number_ID + '/register')
         .ContentType('application/json')
         .TokenBearer(TokenApiOficial)
         .AddBody(
@@ -1943,7 +2095,7 @@ begin
           try
             //
             try
-              response := TRequest.New.BaseURL('https://graph.facebook.com/v19.0/' + PHONE_NUMBER_ID + '/media')
+              response := TRequest.New.BaseURL('https://graph.facebook.com/v24.0/' + PHONE_NUMBER_ID + '/media')
                 //.ContentType('multipart/form-data')
                 //.ContentType('application/json')
                 .TokenBearer(TokenApiOficial)

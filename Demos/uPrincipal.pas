@@ -21,7 +21,8 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls, System.ImageList, Vcl.ImgList, uWPPCloudAPI,
-  uWhatsAppBusinessClasses, IniFiles, System.IOUtils, Vcl.Buttons, Vcl.Imaging.pngimage, DateUtils;
+  uWhatsAppBusinessClasses, IniFiles, System.IOUtils, Vcl.Buttons, Vcl.Imaging.pngimage, DateUtils,
+  Vcl.Mask;
 
 type
   TfrmPrincipal = class(TForm)
@@ -146,8 +147,8 @@ end;
 
 procedure TfrmPrincipal.btnArquivoClick(Sender: TObject);
 var
-  caption, Type_File : string;
-  caminhoArquivo : string;
+  caption, Type_File, Media_Type : string;
+  caminhoArquivo, extensao : string;
   isFigurinha : Boolean;
 begin
   if Trim(ed_num.Text) = '' then
@@ -163,36 +164,29 @@ begin
     mem_message.SetFocus;
   end;}
 
-  {if Trim(edtURL.Text) = '' then
-  begin
-    ShowMessage('INFORM THE URL LINK FILE TO BE SENT');
-    edtURL.SetFocus;
-    Exit;
-  end;}
 
-  sResponse := WPPCloudAPI1.UploadMedia('');
-  //sResponse := WPPCloudAPI1.PostMediaFile('','');
-  memResponse.Lines.Add(sResponse);
+  WPPCloudAPI1.TokenApiOficial := edtTokenAPI.Text;
+  WPPCloudAPI1.PHONE_NUMBER_ID := edtPHONE_NUMBER_ID.Text;
 
-  {OpenDialog1.Execute();
+  OpenDialog1.Execute();
 
   if FileExists(OpenDialog1.FileName) then
     caminhoArquivo := OpenDialog1.FileName
   else
     Exit;
 
-  isFigurinha := False;}
-
-  Type_File := 'image';
-
-  //WPPCloudAPI1.TokenApiOficial := edtTokenAPI.Text;
-  //WPPCloudAPI1.PHONE_NUMBER_ID := edtPHONE_NUMBER_ID.Text;
-  //sResponse := WPPCloudAPI1.SendFile(ed_num.Text, mem_message.Text, 'image', edtURL.Text);
+  isFigurinha := False;
 
 
+  extensao := ExtractFileExt(caminhoArquivo);
+  Media_Type := WPPCloudAPI1.GetContentTypeFromExtension(extensao);
+  Type_File := WPPCloudAPI1.GetTypeFileFromContentType(Media_Type);
 
-  //sResponse := WPPCloudAPI1.SendFile(ed_num.Text, mem_message.Text, 'document', 'https://we.tl/t-Xy3U9kbKUH');
-  //memResponse.Lines.Add(sResponse);
+  sResponse := WPPCloudAPI1.PostMediaFile(caminhoArquivo, Media_Type);
+  memResponse.Lines.Add(sResponse);
+
+
+  sResponse := WPPCloudAPI1.SendFileMediaId(ed_num.Text, mem_message.Text, Type_File, sResponse)
 
 end;
 

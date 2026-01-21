@@ -10,11 +10,9 @@ object frmPrincipal: TfrmPrincipal
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   Position = poScreenCenter
   OnCreate = FormCreate
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 18
@@ -3948,6 +3946,7 @@ object frmPrincipal: TfrmPrincipal
       EditLabel.Height = 13
       EditLabel.Caption = 'Number To Be Shared:'
       TabOrder = 7
+      Text = ''
     end
     object edtNameContactShared: TLabeledEdit
       Left = 227
@@ -3958,6 +3957,7 @@ object frmPrincipal: TfrmPrincipal
       EditLabel.Height = 13
       EditLabel.Caption = 'Name Contact To Be Shared:'
       TabOrder = 8
+      Text = ''
     end
     object Button1: TButton
       AlignWithMargins = True
