@@ -573,8 +573,9 @@ var
 begin
   Result := '';
   try
-    if (length(waid) = 11) or (length(waid) = 10) then
-      waid := DDIDefault.ToString + waid;
+    if DDIDefault > 0 then
+      if (length(waid) = 11) or (length(waid) = 10) then
+        waid := DDIDefault.ToString + waid;
 
     json :=
       '{ ' +
@@ -626,8 +627,9 @@ begin
   Result := '';
   try
 
-    if (length(waid) = 11) or (length(waid) = 10) then
-      waid := DDIDefault.ToString + waid;
+    if DDIDefault > 0 then
+      if (length(waid) = 11) or (length(waid) = 10) then
+        waid := DDIDefault.ToString + waid;
 
     body := CaractersWeb(body);
 
@@ -744,11 +746,12 @@ var
 begin
   Result := '';
   try
-    if (Copy(waid,1,2) = '56') and (length(waid) = 11) then //Chile
-      waid := waid
-    else
-    if (length(waid) = 11) or (length(waid) = 10) then
-      waid := DDIDefault.ToString + waid;
+    if DDIDefault > 0 then
+      if (Copy(waid,1,2) = '56') and (length(waid) = 11) then //Chile
+        waid := waid
+      else
+      if (length(waid) = 11) or (length(waid) = 10) then
+        waid := DDIDefault.ToString + waid;
 
     //body := CaractersWeb(body);
 
@@ -874,11 +877,12 @@ var
 begin
   Result := '';
   try
-    if (Copy(waid,1,2) = '56') and (length(waid) = 11) then //Chile
-      waid := waid
-    else
-    if (length(waid) = 11) or (length(waid) = 10) then
-      waid := DDIDefault.ToString + waid;
+    if DDIDefault > 0 then
+      if (Copy(waid,1,2) = '56') and (length(waid) = 11) then //Chile
+        waid := waid
+      else
+      if (length(waid) = 11) or (length(waid) = 10) then
+        waid := DDIDefault.ToString + waid;
 
     body := CaractersWeb(body);
 
@@ -961,11 +965,12 @@ var
 begin
   Result := '';
   try
-    if (Copy(waid,1,2) = '56') and (length(waid) = 11) then //Chile
-      waid := waid
-    else
-    if (length(waid) = 11) or (length(waid) = 10) then
-      waid := DDIDefault.ToString + waid;
+    if DDIDefault > 0 then
+      if (Copy(waid,1,2) = '56') and (length(waid) = 11) then //Chile
+        waid := waid
+      else
+      if (length(waid) = 11) or (length(waid) = 10) then
+        waid := DDIDefault.ToString + waid;
 
     body := CaractersWeb(body);
 
@@ -1043,8 +1048,9 @@ var
 begin
   Result := '';
   try
-    if (length(waid) = 11) or (length(waid) = 10) then
-      waid := DDIDefault.ToString + waid;
+    if DDIDefault > 0 then
+      if (length(waid) = 11) or (length(waid) = 10) then
+        waid := DDIDefault.ToString + waid;
 
     body := CaractersWeb(body);
 
@@ -1179,8 +1185,9 @@ begin
   Result := '';
 
   try
-    if (length(waid) = 11) or (length(waid) = 10) then
-      waid := DDIDefault.ToString + waid;
+    if DDIDefault > 0 then
+      if (length(waid) = 11) or (length(waid) = 10) then
+        waid := DDIDefault.ToString + waid;
 
     body := CaractersWeb(body);
 
@@ -1265,11 +1272,12 @@ begin
 
 
   try
-    if (Copy(waid,1,2) = '56') and (length(waid) = 11) then //Chile
-      waid := waid
-    else
-    if (length(waid) = 11) or (length(waid) = 10) then
-      waid := DDIDefault.ToString + waid;
+    if DDIDefault > 0 then
+      if (Copy(waid,1,2) = '56') and (length(waid) = 11) then //Chile
+        waid := waid
+      else
+      if (length(waid) = 11) or (length(waid) = 10) then
+        waid := DDIDefault.ToString + waid;
 
     json :=
       '{ ' +
@@ -1335,11 +1343,12 @@ begin
 
   try
 
-    if (Copy(waid,1,2) = '56') and (length(waid) = 11) then //Chile
-      waid := waid
-    else
-    if (length(waid) = 11) or (length(waid) = 10) then
-      waid := DDIDefault.ToString + waid;
+    if DDIDefault > 0 then
+      if (Copy(waid,1,2) = '56') and (length(waid) = 11) then //Chile
+        waid := waid
+      else
+      if (length(waid) = 11) or (length(waid) = 10) then
+        waid := DDIDefault.ToString + waid;
 
     reply_body := CaractersWeb(reply_body);
 
@@ -1411,11 +1420,13 @@ var
 begin
   Result := '';
   try
-    if (Copy(waid,1,2) = '56') and (length(waid) = 11) then //Chile
-      waid := waid
-    else
-    if (length(waid) = 11) or (length(waid) = 10) then
-      waid := DDIDefault.ToString + waid;
+    if DDIDefault > 0 then
+      if (Copy(waid,1,2) = '56') and (length(waid) = 11) then //Chile
+        waid := waid
+      else
+      //+55 17 9 8138-8414
+      if (length(waid) = 11) or (length(waid) = 10) then
+        waid := DDIDefault.ToString + waid;
 
     body := CaractersWeb(body);
 
@@ -1658,8 +1669,9 @@ const
        'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36';
 begin
   try
-    if (length(waid) = 11) or (length(waid) = 10) then
-      waid := DDIDefault.ToString + waid;
+    if DDIDefault > 0 then
+      if (length(waid) = 11) or (length(waid) = 10) then
+        waid := DDIDefault.ToString + waid;
 
     json := '{ "messaging_product": "whatsapp", "to": "' + waid + '", "type": "template", "template": { "name": "hello_world", "language": { "code": "en_US" } } }';
 
