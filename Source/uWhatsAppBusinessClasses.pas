@@ -158,6 +158,42 @@ public
   class function FromJsonString(AJsonString: string): TInteractiveClass;
 end;
 
+TWelcome_messageClass = class
+private
+  FText: String;
+public
+  property text: String read FText write FText;
+  //function ToJsonString: string;
+  //class function FromJsonString(AJsonString: string): TWelcome_messageClass;
+end;
+
+TReferralClass = class
+private
+  FBody: String;
+  FCtwa_clid: String;
+  FHeadline: String;
+  FImage_url: String;
+  FMedia_type: String;
+  FSource_id: String;
+  FSource_type: String;
+  FSource_url: String;
+  FWelcome_message: TWelcome_messageClass;
+public
+  property body: String read FBody write FBody;
+  property ctwa_clid: String read FCtwa_clid write FCtwa_clid;
+  property headline: String read FHeadline write FHeadline;
+  property image_url: String read FImage_url write FImage_url;
+  property media_type: String read FMedia_type write FMedia_type;
+  property source_id: String read FSource_id write FSource_id;
+  property source_type: String read FSource_type write FSource_type;
+  property source_url: String read FSource_url write FSource_url;
+  property welcome_message: TWelcome_messageClass read FWelcome_message write FWelcome_message;
+  //constructor Create;
+  //destructor Destroy; override;
+  //function ToJsonString: string;
+  //class function FromJsonString(AJsonString: string): TReferralClass;
+end;
+
 TContextClass = class
 private
   FFrom: String;
@@ -228,6 +264,7 @@ private
   FInteractive: TInteractiveClass;
   FReaction: TReactionClass;
   FContacts: TArray<TContactsClass_001>;
+  FReferral: TReferralClass;
 public
   property from: String read FFrom write FFrom;
   property id: String read FId write FId;
@@ -244,6 +281,7 @@ public
   property interactive: TInteractiveClass read FInteractive write FInteractive;
   property reaction: TReactionClass read FReaction write FReaction;
   property contacts: TArray<TContactsClass_001> read FContacts write FContacts;
+  property referral: TReferralClass read FReferral write FReferral;
 
   constructor Create;
   destructor Destroy; override;

@@ -48,6 +48,7 @@ type
     FEmoticons: TWPPCloudAPIEmoticons;
     function CaractersWeb(vText: string): string;
 
+
   protected
 
 
@@ -75,6 +76,8 @@ type
     //NUMBER REGITRATION
     function register_Number(pPhone_Number_ID: string): string;
     function deregister_Number(pPhone_Number_ID: string): string;
+
+    function subscribed_apps(waba_id: string): string;
 
     function Generate_token_permanent(client_id, client_secret, code, redirect_uri: string): string;
 
@@ -2018,6 +2021,34 @@ begin
         '  "messaging_product": "whatsapp", ' +
         '  "pin":"123456"' +
         '}')
+        .Post;
+      response := Retorno.Content;
+    except
+      on E: Exception do
+      begin
+        Result := 'Error: ' + e.Message;
+        Exit;
+      end;
+    end;
+
+
+    Result := response;
+  finally
+  end;
+end;
+
+function TWPPCloudAPI.subscribed_apps(waba_id: string): string;
+var
+  response: string;
+  //MessagePayload: uRetMensagemApiOficial.TMessagePayload;
+  UTF8Texto: UTF8String;
+  Retorno: IResponse;
+begin
+  try
+    try
+      Retorno:= TRequest.New.BaseURL('https://graph.facebook.com/v24.0/' + waba_id + '/subscribed_apps')
+        .ContentType('application/json')
+        .TokenBearer(TokenApiOficial)
         .Post;
       response := Retorno.Content;
     except
