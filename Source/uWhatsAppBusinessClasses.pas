@@ -729,7 +729,7 @@ end;
 
 class function TResultClass.FromJsonString(AJsonString: string): TResultClass;
 begin
-  result := TJson.JsonToObject<TResultClass>(AJsonString)
+  result := TJson.JsonToObject<TResultClass>(AJsonString);
 end;
 
 { TUrlMedia }

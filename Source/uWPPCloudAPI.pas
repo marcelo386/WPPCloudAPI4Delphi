@@ -133,6 +133,27 @@ end;
 
 function TWPPCloudAPI.CaractersWeb(vText: string): string;
 begin
+  // Normaliza <br>
+  vText := StringReplace(vText, '<br />', sLineBreak, [rfReplaceAll, rfIgnoreCase]);
+  vText := StringReplace(vText, '<br/>',  sLineBreak, [rfReplaceAll, rfIgnoreCase]);
+  vText := StringReplace(vText, '<br>',   sLineBreak, [rfReplaceAll, rfIgnoreCase]);
+
+  // Normaliza quebras
+  vText := StringReplace(vText, #13#10, #10, [rfReplaceAll]); // CRLF -> LF
+  vText := StringReplace(vText, #13,   #10, [rfReplaceAll]);  // CR   -> LF
+
+  // ESCAPAR PRIMEIRO A BARRA INVERTIDA
+  //vText := StringReplace(vText, '\',  '\\', [rfReplaceAll]);
+
+  // Depois os demais
+  vText := StringReplace(vText, '"',  '\"', [rfReplaceAll]);
+  //vText := StringReplace(vText, '/',  '\/', [rfReplaceAll]); // opcional
+  vText := StringReplace(vText, #8,   '\b', [rfReplaceAll]);
+  vText := StringReplace(vText, #9,   '\t', [rfReplaceAll]);
+  vText := StringReplace(vText, #10,  '\n', [rfReplaceAll]);
+  vText := StringReplace(vText, #12,  '\f', [rfReplaceAll]);
+
+  (*
   vText  := StringReplace(vText, sLineBreak,' \n'  , [rfReplaceAll] );
   vText  := StringReplace(vText, '<br>'    ,' \n'  , [rfReplaceAll] );
   vText  := StringReplace(vText, '<br />'  ,' \n'  , [rfReplaceAll] );
@@ -146,6 +167,8 @@ begin
   vText  := StringReplace(vText, #9        ,'\t'   ,  [rfReplaceAll]); // tabulação
   vText  := StringReplace(vText, #$A       ,' \n'  , [rfReplaceAll] );
   vText  := StringReplace(vText, #$A#$A    ,' \n'  , [rfReplaceAll] );
+  *)
+
   Result := vText;
 end;
 
@@ -424,6 +447,7 @@ begin
         try
           if Length(LResp.RawBytes) > 0 then
             LOut.WriteBuffer(PByte(LResp.RawBytes)^, Length(LResp.RawBytes))
+            //LOut.WriteBuffer(LResp.RawBytes[0], Length(LResp.RawBytes))
           else
           begin
             // último recurso: Content string → bytes (pode não ser ideal p/ binário)
@@ -636,53 +660,64 @@ begin
 
     body := CaractersWeb(body);
 
-    json :=
-      '{ ' +
-      '  "messaging_product": "whatsapp", ' +
-      '  "recipient_type": "individual", ' +
-      '  "to": "' + waid + '", ' +
-      '  "type": "interactive", ' +
-      '  "interactive": {  ' +
-      '  "type": "button", ' +
-      IfThen( Trim(header) <> '' ,
-      '  "header": { ' +
-      '    "type": "text",  ' +
-      '    "text": "' + header + '"  ' +
-      '  }, ', '') +
+    if pos('"interactive"', actions) > 0 then
+    begin
+      json :=
+        '{ ' +
+        '  "messaging_product": "whatsapp", ' +
+        '  "recipient_type": "individual", ' +
+        '  "to": "' + waid + '", ' +
+        '  "type": "interactive" ' + actions +
+        '}';
+    end
+    else
+      json :=
+        '{ ' +
+        '  "messaging_product": "whatsapp", ' +
+        '  "recipient_type": "individual", ' +
+        '  "to": "' + waid + '", ' +
+        '  "type": "interactive", ' +
+        '  "interactive": {  ' +
+        '  "type": "button", ' +
+        IfThen( Trim(header) <> '' ,
+        '  "header": { ' +
+        '    "type": "text",  ' +
+        '    "text": "' + header + '"  ' +
+        '  }, ', '') +
 
-      '  "body": { ' +
-      '    "text": "' + body + '" ' +
-      '  }, ' +
+        '  "body": { ' +
+        '    "text": "' + body + '" ' +
+        '  }, ' +
 
-      IfThen( Trim(footer) <> '' ,
-      '  "footer": { ' +
-      '    "text": "' + footer + '" ' +
-      '  }, ', '') +
-      actions +
+        IfThen( Trim(footer) <> '' ,
+        '  "footer": { ' +
+        '    "text": "' + footer + '" ' +
+        '  }, ', '') +
+        actions +
 
-      (*
-      '  "action": { ' +
-      '    "buttons": [ ' +
-      '      {  ' +
-      '        "type": "reply", ' +
-      '        "reply": { ' +
-      '          "id": "UNIQUE_BUTTON_ID_1", ' +
-      '          "title": "SIM" ' +
-      '        } ' +
-      '      }, ' +
-      '      {  ' +
-      '        "type": "reply", ' +
-      '        "reply": { ' +
-      '          "id": "UNIQUE_BUTTON_ID_2", ' +
-      '          "title": "NÃO" ' +
-      '        } ' +
-      '      } ' +
-      '    ]  ' +
-      '  } ' +
-      ' } ' +
-      *)
+        (*
+        '  "action": { ' +
+        '    "buttons": [ ' +
+        '      {  ' +
+        '        "type": "reply", ' +
+        '        "reply": { ' +
+        '          "id": "UNIQUE_BUTTON_ID_1", ' +
+        '          "title": "SIM" ' +
+        '        } ' +
+        '      }, ' +
+        '      {  ' +
+        '        "type": "reply", ' +
+        '        "reply": { ' +
+        '          "id": "UNIQUE_BUTTON_ID_2", ' +
+        '          "title": "NÃO" ' +
+        '        } ' +
+        '      } ' +
+        '    ]  ' +
+        '  } ' +
+        ' } ' +
+        *)
 
-      '}';
+        '}';
 
     UTF8Texto := UTF8Encode(json);
 
