@@ -241,6 +241,7 @@ private
 public
   property name: TNameClass read FName write FName;
   property phones: TArray<TPhonesClass> read FPhones write FPhones;
+
   //constructor Create;
   //destructor Destroy; override;
   //function ToJsonString: string;
@@ -250,6 +251,7 @@ end;
 TMessagesClass = class
 private
   FFrom: String;
+  FFrom_user_id: String;
   FId: String;
   FType: String;
   FTimestamp: String;
@@ -265,8 +267,10 @@ private
   FReaction: TReactionClass;
   FContacts: TArray<TContactsClass_001>;
   FReferral: TReferralClass;
+
 public
   property from: String read FFrom write FFrom;
+  property from_user_id: String read FFrom_user_id write FFrom_user_id;
   property id: String read FId write FId;
   property &type: String read FType write FType;
   property timestamp: String read FTimestamp write FTimestamp;
@@ -301,9 +305,11 @@ end;
 TContactsClass = class
 private
   FProfile: TProfileClass;
+  FUser_id: String;
   FWa_id: String;
 public
   property profile: TProfileClass read FProfile write FProfile;
+  property user_id: String read FUser_id write FUser_id;
   property wa_id: String read FWa_id write FWa_id;
   constructor Create;
   destructor Destroy; override;

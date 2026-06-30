@@ -186,7 +186,7 @@ begin
   memResponse.Lines.Add(sResponse);
 
 
-  sResponse := WPPCloudAPI1.SendFileMediaId(ed_num.Text, mem_message.Text, Type_File, sResponse)
+  sResponse := WPPCloudAPI1.SendFileMediaId(ed_num.Text, mem_message.Text, Type_File, sResponse);
 
 end;
 
