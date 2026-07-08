@@ -248,6 +248,18 @@ public
   //class function FromJsonString(AJsonString: string): TContactsClass_001;
 end;
 
+
+TLocationClass = class
+private
+  FLatitude: String;
+  FLongitude: String;
+public
+  property latitude: String read FLatitude write FLatitude;
+  property longitude: String read FLongitude write FLongitude;
+  //function ToJsonString: string;
+  //class function FromJsonString(AJsonString: string): TLocationClass;
+end;
+
 TMessagesClass = class
 private
   FFrom: String;
@@ -267,6 +279,7 @@ private
   FReaction: TReactionClass;
   FContacts: TArray<TContactsClass_001>;
   FReferral: TReferralClass;
+  FLocation: TLocationClass;
 
 public
   property from: String read FFrom write FFrom;
@@ -286,6 +299,7 @@ public
   property reaction: TReactionClass read FReaction write FReaction;
   property contacts: TArray<TContactsClass_001> read FContacts write FContacts;
   property referral: TReferralClass read FReferral write FReferral;
+  property location: TLocationClass read FLocation write FLocation;
 
   constructor Create;
   destructor Destroy; override;
